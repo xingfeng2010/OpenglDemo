@@ -1,4 +1,4 @@
-package opengl.xingfeng.com.opengldemo;
+package opengl.xingfeng.com.opengldemo.render;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -9,7 +9,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import opengl.xingfeng.com.opengldemo.shape.MyCoordinate;
 
-class CoordinateRender implements GLSurfaceView.Renderer{
+public class CoordinateRender implements GLSurfaceView.Renderer{
     private MyCoordinate coordinate;
     private float mAngle = 45;
 

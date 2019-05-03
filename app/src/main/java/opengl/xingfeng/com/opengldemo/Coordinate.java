@@ -4,6 +4,10 @@ import android.opengl.GLSurfaceView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+
+import opengl.xingfeng.com.opengldemo.render.CoordinateRender;
+import opengl.xingfeng.com.opengldemo.render.TextureRender;
+
 public class Coordinate extends AppCompatActivity {
 
     private GLSurfaceView mGLSurfaceView;
@@ -13,7 +17,9 @@ public class Coordinate extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         mGLSurfaceView = new GLSurfaceView(this);
-        mGLSurfaceView.setRenderer(new CoordinateRender());
+        mGLSurfaceView.setEGLContextClientVersion(2);
+//        mGLSurfaceView.setRenderer(new CoordinateRender());
+        mGLSurfaceView.setRenderer(new TextureRender(this));
         setContentView(mGLSurfaceView);
     }
 
