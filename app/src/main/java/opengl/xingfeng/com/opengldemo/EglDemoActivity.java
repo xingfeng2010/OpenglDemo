@@ -14,6 +14,8 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL10;
 
+import opengl.xingfeng.com.opengldemo.util.VideoSupportUtil;
+
 public class EglDemoActivity extends AppCompatActivity implements SurfaceHolder.Callback, Runnable, View.OnTouchListener{
 
     private SurfaceView mSurfaceView;
@@ -31,6 +33,8 @@ public class EglDemoActivity extends AppCompatActivity implements SurfaceHolder.
 
         mSurfaceView.getHolder().addCallback(this);
         mSurfaceView.setOnTouchListener(this);
+
+        VideoSupportUtil.listSupportType();
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL;
 import javax.microedition.khronos.opengles.GL10;
 
 import opengl.xingfeng.com.opengldemo.R;
@@ -38,6 +39,7 @@ public class TextureRender implements GLSurfaceView.Renderer {
 
     private int mProgram;
     private int mTexture;
+    private int vboId;
 
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
@@ -115,6 +117,25 @@ public class TextureRender implements GLSurfaceView.Renderer {
 
 
         initProgram();
+        createVbo();
+    }
+
+    private void createVbo() {
+        //1.创建VBO
+        int[] vbos = new int[1];
+        GLES20.glGenBuffers(vbos.length, vbos, 0);
+        vboId = vbos[0];
+
+        //2.绑定VBO
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
+        //3.分配VBO需要的缓存大小
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, mVertexData.length * 4 + mTextureVertexData.length * 4,
+                null, GLES20.GL_STATIC_DRAW);
+        //4.为VBO设置定点数据的值
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, mVertexData.length * 4, mVertexBuffer);
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, mVertexData.length * 4, mTextureVertexData.length * 4, mTextureBuffer);
+        //5.解绑VBO
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
     @Override
@@ -128,6 +149,36 @@ public class TextureRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
+        //normalDraw();
+        vboDraw();
+    }
+
+    private void vboDraw() {
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glUseProgram(mProgram);
+
+        GLES20.glUniformMatrix4fv(uMatrixPosition, 1, false, mProjectionMatrix, 0);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
+
+        GLES20.glEnableVertexAttribArray(aVertexPosition);
+        GLES20.glVertexAttribPointer(aVertexPosition, 3, GLES20.GL_FLOAT, false, 12, 0);
+
+        GLES20.glEnableVertexAttribArray(aTextureCoord);
+        GLES20.glVertexAttribPointer(aTextureCoord, 2, GLES20.GL_FLOAT, false, 8, mVertexData.length * 4);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture);
+
+        GLES20.glUniform1i(uTexturePositoin, 0);
+
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES,mIndexData.length,GLES30.GL_UNSIGNED_SHORT,mIndexBuffer);
+
+        GLES20.glDisableVertexAttribArray(aVertexPosition);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
+    private void normalDraw() {
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glUseProgram(mProgram);
 
