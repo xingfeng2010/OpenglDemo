@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import opengl.xingfeng.com.opengldemo.water.ESWaterActivity;
+
 public class StartMainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
     private ListView mListView;
     private LayoutInflater mLayoutInflator;
@@ -21,7 +23,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             MainActivity.class,
             Coordinate.class,
             EglDemoActivity.class,
-            FBOActivity.class
+            FBOActivity.class,
+            ESWaterActivity.class
     };
 
 
@@ -49,7 +52,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "CustomRender",
                 "CoordinateRender and TextureRender",
                 "EGLDemo",
-                "FBODemo"
+                "FBODemo",
+                "OPENGLES 添加水印"
 
         };
 

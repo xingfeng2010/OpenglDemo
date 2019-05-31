@@ -30,9 +30,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"></activity>
-        <activity android:name=".Coordinate"></activity>
-        <activity android:name=".EglDemoActivity"></activity>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".Coordinate" />
+        <activity android:name=".EglDemoActivity" />
         <activity android:name=".StartMainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,7 +40,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".FBOActivity"></activity>
+        <activity android:name=".FBOActivity" />
+        <activity android:name=".water.ESWaterActivity"></activity>
     </application>
 
 </manifest>
