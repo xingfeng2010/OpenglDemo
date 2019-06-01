@@ -24,6 +24,7 @@
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
 
     <application
+        android:name=".OpenglApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -41,7 +42,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".FBOActivity" />
-        <activity android:name=".water.ESWaterActivity"></activity>
+        <activity android:name=".water.ESWaterActivity" />
+        <activity android:name=".record.RecordMainActivity" />
+        <activity android:name=".record.CameraActivity" />
+        <activity android:name=".record.RecodeActivity"></activity>
     </application>
 
 </manifest>

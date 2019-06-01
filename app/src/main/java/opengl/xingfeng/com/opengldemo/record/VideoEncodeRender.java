@@ -1,33 +1,23 @@
-package opengl.xingfeng.com.opengldemo.water;
+package opengl.xingfeng.com.opengldemo.record;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.util.ShaderHelper;
 import opengl.xingfeng.com.opengldemo.util.TextResourceReader;
 
-public class WaterRender implements GLSurfaceView.Renderer{
+public class VideoEncodeRender implements EglSurfaceView.Render {
     //顶点坐标
     static float vertexData[] = {   // in counterclockwise order:
             -1f, -1f, 0.0f, // bottom left
             1f, -1f, 0.0f, // bottom right
             -1f, 1f, 0.0f, // top left
             1f, 1f, 0.0f,  // top right
-
-            0f, 0f, 0f,//水印预留位置
-            0f, 0f, 0f,
-            0f, 0f, 0f,
-            0f, 0f, 0f
     };
 
     //纹理坐标  对应顶点坐标  与之映射
@@ -60,16 +50,13 @@ public class WaterRender implements GLSurfaceView.Renderer{
     //vbo id
     private int vboId;
 
-    private int fboTextureId;
+    private int textureId;
 
     private Context context;
 
-    private Bitmap bitmap;
-    private int waterTextureId;
-
-    public WaterRender(Context context) {
+    public VideoEncodeRender(Context context,int textureId) {
         this.context = context;
-        initWater();
+        this.textureId = textureId;
 
         vertexBuffer = ByteBuffer.allocateDirect(vertexData.length * 4)
                 .order(ByteOrder.nativeOrder())
@@ -85,12 +72,9 @@ public class WaterRender implements GLSurfaceView.Renderer{
     }
 
     @Override
-    public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
-        //启用透明
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        program = ShaderHelper.buildProgram(TextResourceReader.readTextFileFromResource(context, R.raw.texture_vertex_shader),
-                TextResourceReader.readTextFileFromResource(context, R.raw.texture_fragment_shader));
+    public void onSurfaceCreated() {
+        program = ShaderHelper.buildProgram(TextResourceReader.readTextFileFromResource(context, R.raw.camera_vertex_shader_screen),
+                TextResourceReader.readTextFileFromResource(context, R.raw.camera_fragment_shader_screen));
 
         if (program > 0) {
             //获取顶点坐标字段
@@ -102,20 +86,17 @@ public class WaterRender implements GLSurfaceView.Renderer{
 
             //创建vbo
             createVBO();
-
-            //创建水印纹理
-            createWaterTextureId();
         }
     }
 
     @Override
-    public void onSurfaceChanged(GL10 gl10, int width, int height) {
+    public void onSurfaceChanged(int width, int height) {
         //宽高
         GLES20.glViewport(0, 0, width, height);
     }
 
     @Override
-    public void onDrawFrame(GL10 gl10) {
+    public void onDrawFrame() {
         //清空颜色
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         //设置背景颜色
@@ -126,7 +107,7 @@ public class WaterRender implements GLSurfaceView.Renderer{
 
         //设置纹理
         //绑定渲染纹理  默认是第0个位置
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, fboTextureId);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
 
         GLES20.glEnableVertexAttribArray(avPosition);
         GLES20.glEnableVertexAttribArray(afPosition);
@@ -140,21 +121,13 @@ public class WaterRender implements GLSurfaceView.Renderer{
 //        GLES20.glVertexAttribPointer(afPosition, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, textureBuffer);
 
         //绘制 GLES20.GL_TRIANGLE_STRIP:复用坐标
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertexCount);
         GLES20.glDisableVertexAttribArray(avPosition);
         GLES20.glDisableVertexAttribArray(afPosition);
         //解绑纹理
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-
-
-        drawWater();
     }
 
-
-    public void onDraw(int fboTextureId) {
-        this.fboTextureId = fboTextureId;
-      //  onDrawFrame();
-    }
 
     /**
      * 创建vbo
@@ -186,80 +159,6 @@ public class WaterRender implements GLSurfaceView.Renderer{
         GLES20.glVertexAttribPointer(avPosition, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, 0);
         GLES20.glVertexAttribPointer(afPosition, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexData.length * 4);
         //3. 解绑VBO
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-    }
-
-
-    private void initWater() {
-        //bitmap = ShaderUtil.createTextImage("我是水印", 40, "#fff000", "#00000000", 0);
-
-        //设置位置 根据需求自己配置
-       // float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
-        float r = 1.0f;
-        float w = r * 0.1f;
-        vertexData[12] = 0.8f - w;
-        vertexData[13] = -0.8f;
-        vertexData[14] = 0;
-
-        vertexData[15] = 0.8f;
-        vertexData[16] = -0.8f;
-        vertexData[17] = 0;
-
-        vertexData[18] = 0.8f - w;
-        vertexData[19] = -0.7f;
-        vertexData[20] = 0;
-
-        vertexData[21] = 0.8f;
-        vertexData[22] = -0.7f;
-        vertexData[23] = 0;
-    }
-
-    private void createWaterTextureId() {
-
-        int[] textureIds = new int[1];
-        //创建纹理
-        GLES20.glGenTextures(1, textureIds, 0);
-        waterTextureId = textureIds[0];
-        //绑定纹理
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, waterTextureId);
-        //环绕（超出纹理坐标范围）  （s==x t==y GL_REPEAT 重复）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-        //过滤（纹理像素映射到坐标点）  （缩小、放大：GL_LINEAR线性）
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-
-        ByteBuffer bitmapBuffer = ByteBuffer.allocate(bitmap.getHeight() * bitmap.getWidth() * 4);//RGBA
-        bitmap.copyPixelsToBuffer(bitmapBuffer);
-        //将bitmapBuffer位置移动到初始位置
-        bitmapBuffer.flip();
-
-        //设置内存大小绑定内存地址
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, bitmap.getWidth(), bitmap.getHeight(),
-                0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, bitmapBuffer);
-
-        //解绑纹理
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-    }
-
-
-    public void drawWater() {
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, waterTextureId);
-
-        GLES20.glEnableVertexAttribArray(avPosition);
-        GLES20.glEnableVertexAttribArray(afPosition);
-
-        GLES20.glVertexAttribPointer(avPosition, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
-                vertexStride * 4);//四个坐标之后的是水印的坐标
-        GLES20.glVertexAttribPointer(afPosition, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
-                vertexData.length * 4);
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-
-        GLES20.glDisableVertexAttribArray(avPosition);
-        GLES20.glDisableVertexAttribArray(afPosition);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 }

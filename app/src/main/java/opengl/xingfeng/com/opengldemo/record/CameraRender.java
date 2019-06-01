@@ -1,22 +1,18 @@
-package opengl.xingfeng.com.opengldemo.water;
+package opengl.xingfeng.com.opengldemo.record;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.util.ShaderHelper;
 import opengl.xingfeng.com.opengldemo.util.TextResourceReader;
 
-public class WaterRender implements GLSurfaceView.Renderer{
+public class CameraRender implements EglSurfaceView.Render{
     //顶点坐标
     static float vertexData[] = {   // in counterclockwise order:
             -1f, -1f, 0.0f, // bottom left
@@ -67,7 +63,7 @@ public class WaterRender implements GLSurfaceView.Renderer{
     private Bitmap bitmap;
     private int waterTextureId;
 
-    public WaterRender(Context context) {
+    public CameraRender(Context context) {
         this.context = context;
         initWater();
 
@@ -85,12 +81,12 @@ public class WaterRender implements GLSurfaceView.Renderer{
     }
 
     @Override
-    public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+    public void onSurfaceCreated() {
         //启用透明
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        program = ShaderHelper.buildProgram(TextResourceReader.readTextFileFromResource(context, R.raw.texture_vertex_shader),
-                TextResourceReader.readTextFileFromResource(context, R.raw.texture_fragment_shader));
+        program = ShaderHelper.buildProgram(TextResourceReader.readTextFileFromResource(context, R.raw.camera_vertex_shader_screen),
+                TextResourceReader.readTextFileFromResource(context, R.raw.camera_fragment_shader_screen));
 
         if (program > 0) {
             //获取顶点坐标字段
@@ -109,13 +105,13 @@ public class WaterRender implements GLSurfaceView.Renderer{
     }
 
     @Override
-    public void onSurfaceChanged(GL10 gl10, int width, int height) {
+    public void onSurfaceChanged(int width, int height) {
         //宽高
         GLES20.glViewport(0, 0, width, height);
     }
 
     @Override
-    public void onDrawFrame(GL10 gl10) {
+    public void onDrawFrame() {
         //清空颜色
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         //设置背景颜色
@@ -153,7 +149,7 @@ public class WaterRender implements GLSurfaceView.Renderer{
 
     public void onDraw(int fboTextureId) {
         this.fboTextureId = fboTextureId;
-      //  onDrawFrame();
+        onDrawFrame();
     }
 
     /**
@@ -191,11 +187,10 @@ public class WaterRender implements GLSurfaceView.Renderer{
 
 
     private void initWater() {
-        //bitmap = ShaderUtil.createTextImage("我是水印", 40, "#fff000", "#00000000", 0);
+        bitmap = ShaderHelper.createTextImage("我是水印", 40, "#fff000", "#00000000", 0);
 
         //设置位置 根据需求自己配置
-       // float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
-        float r = 1.0f;
+        float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
         float w = r * 0.1f;
         vertexData[12] = 0.8f - w;
         vertexData[13] = -0.8f;
