@@ -14,6 +14,8 @@ import java.lang.ref.WeakReference;
 
 import opengl.xingfeng.com.opengldemo.R;
 
+import static opengl.xingfeng.com.opengldemo.record.BaseVideoEncoder.TAG;
+
 public class RecodeActivity extends AppCompatActivity {
 
     private CameraEglSurfaceView cameraEglSurfaceView;
@@ -28,6 +30,7 @@ public class RecodeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recode);
 
         cameraEglSurfaceView = findViewById(R.id.camera);
+        button = findViewById(R.id.recode);
     }
 
     public void recode1(View view) {
@@ -90,14 +93,18 @@ public class RecodeActivity extends AppCompatActivity {
         public void run() {
             super.run();
             isExit = false;
+
+            Log.i(TAG,"PutPcmThread begin run:");
             InputStream inputStream = null;
             try {
                 int s_ = 44100 * 2 * (16 / 2);
                 int bufferSize = s_ / 100;
 
+
                 inputStream = reference.get().getAssets().open("mydream.pcm");
                 byte[] buffer = new byte[bufferSize];
                 int size = 0;
+                Log.i(TAG,"PutPcmThread inputStream:" + inputStream);
                 while ((size = inputStream.read(buffer, 0, bufferSize)) != -1) {
                     try {
                         //10毫秒写入一次
@@ -112,6 +119,7 @@ public class RecodeActivity extends AppCompatActivity {
                     reference.get().videoEncodeRecode.putPcmData(buffer, size);
                 }
             } catch (IOException e) {
+                Log.i(TAG,"PutPcmThread exception:" + e);
                 e.printStackTrace();
             } finally {
                 if (inputStream != null) {

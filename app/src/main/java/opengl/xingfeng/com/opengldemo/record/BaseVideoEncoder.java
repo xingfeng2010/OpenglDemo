@@ -21,6 +21,7 @@ import opengl.xingfeng.com.opengldemo.util.EglHelper;
 import opengl.xingfeng.com.opengldemo.util.PermissionUtil;
 
 public abstract class BaseVideoEncoder {
+    public static final String TAG = "BaseVideoEncoder";
     private Surface mSurface;
     private EGLContext mEGLContext;
     private EglSurfaceView.Render mRender;
@@ -176,8 +177,10 @@ public abstract class BaseVideoEncoder {
             mVideoEncodec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             mVideoBuffInfo = new MediaCodec.BufferInfo();
             mSurface = mVideoEncodec.createInputSurface();
+            Log.i(TAG,"initVideoEncoder success!");
         } catch (IOException e) {
             e.printStackTrace();
+            Log.i(TAG,"initVideoEncoder exception:" + e);
             mVideoEncodec = null;
             mVideoBuffInfo = null;
             mSurface = null;
@@ -190,11 +193,13 @@ public abstract class BaseVideoEncoder {
             MediaFormat audioFormat = MediaFormat.createAudioFormat(mimeType, sampleRate, channel);
             audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, 96000);
             audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
-            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 4096);
+            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 7056);
             mAudioEncodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
 
             mAudioBuffInfo = new MediaCodec.BufferInfo();
+            Log.i(TAG,"initAudioEncoder success!");
         } catch (IOException e) {
+            Log.i(TAG,"initAudioEncoder fail:" + e);
             e.printStackTrace();
             mAudioEncodec = null;
             mAudioBuffInfo = null;
@@ -203,10 +208,12 @@ public abstract class BaseVideoEncoder {
     }
 
     public void putPcmData(byte[] buffer, int size) {
+        Log.i(TAG,"putPcmData size:" + size);
         if (mAudioEncodecThread != null && !mAudioEncodecThread.isExit && buffer != null && size > 0) {
             int inputBufferIndex = mAudioEncodec.dequeueInputBuffer(0);
             if (inputBufferIndex >= 0) {
                 ByteBuffer byteBuffer = mAudioEncodec.getInputBuffer(inputBufferIndex);
+                Log.i(TAG,"putPcmData byteBuffer capacity:" + byteBuffer.capacity());
                 byteBuffer.clear();
                 byteBuffer.put(buffer);
                 long pts = getAudioPts(size, sampleRate, channel, sampleBit);
@@ -247,6 +254,7 @@ public abstract class BaseVideoEncoder {
         public void run() {
             super.run();
             isExit = false;
+            Log.i(TAG,"VideoEncodecThread begin run:");
             videoEncodec.start();
             while (true) {
                 if (isExit) {
@@ -339,6 +347,7 @@ public abstract class BaseVideoEncoder {
         public void run() {
             super.run();
             isExit = false;
+            Log.i(TAG,"AudioEncodecThread begin run:");
             audioEncodec.start();
 
             while (true) {
@@ -428,6 +437,7 @@ public abstract class BaseVideoEncoder {
             eglHelper = new EglHelper();
             eglHelper.initEgl(encoderWeakReference.get().mSurface, encoderWeakReference.get().mEGLContext);
 
+            Log.i(TAG,"EGLMediaThread begin run:");
             while (true) {
                 try {
                     if (isExit) {
