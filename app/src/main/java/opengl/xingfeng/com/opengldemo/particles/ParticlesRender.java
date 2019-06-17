@@ -8,6 +8,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import opengl.xingfeng.com.opengldemo.R;
+import opengl.xingfeng.com.opengldemo.Skybox.SkeyboxShaderProgram;
+import opengl.xingfeng.com.opengldemo.Skybox.Skybox;
 import opengl.xingfeng.com.opengldemo.util.Geometry.Vector;
 import opengl.xingfeng.com.opengldemo.util.Geometry.Point;
 import opengl.xingfeng.com.opengldemo.util.MatrixHelper;
@@ -20,9 +22,11 @@ import static android.opengl.GLES20.GL_ONE;
 import static android.opengl.GLES20.glBlendFunc;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glDisable;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glViewport;
 import static android.opengl.Matrix.multiplyMM;
+import static android.opengl.Matrix.rotateM;
 import static android.opengl.Matrix.setIdentityM;
 import static android.opengl.Matrix.translateM;
 
@@ -44,7 +48,13 @@ public class ParticlesRender implements GLSurfaceView.Renderer{
     private float angleVarianceInDegrees = 5f;
     private float speedVariance = 1f;
 
-    private int texture;
+    private int particleTexture;
+
+    private SkeyboxShaderProgram skeyboxShaderProgram;
+    private Skybox skybox;
+    private int skyboxTexture;
+
+    private float xRotation, yRotation;
 
     public ParticlesRender(Context context) {
         mContext = context;
@@ -53,12 +63,12 @@ public class ParticlesRender implements GLSurfaceView.Renderer{
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
 
         particleShaderProgram = new ParticleShaderProgram(mContext);
         particleSystem = new ParticleSystem(10000);
         globalStartTime = System.nanoTime();
+        skeyboxShaderProgram = new SkeyboxShaderProgram(mContext);
+        skybox = new Skybox();
 
         Vector particleDirection = new Vector(0f, 0.5f, 0f);
 
@@ -86,7 +96,12 @@ public class ParticlesRender implements GLSurfaceView.Renderer{
                 speedVariance
         );
 
-        texture = TextureHelper.loadTexture(mContext, R.drawable.particle_texture);
+        particleTexture = TextureHelper.loadTexture(mContext, R.drawable.particle_texture);
+        skyboxTexture = TextureHelper.loadCubeMap(mContext, new int[] {
+              R.drawable.left, R.drawable.right,
+                R.drawable.bottom, R.drawable.top,
+                R.drawable.front,  R.drawable.back
+        });
     }
 
     @Override
@@ -94,24 +109,60 @@ public class ParticlesRender implements GLSurfaceView.Renderer{
        glViewport(0, 0, width, height);
 
         MatrixHelper.perspectiveM(projectionMatrix, 45, (float)width / (float) height, 1f, 10f);
-        setIdentityM(viewMatrix, 0);
-        translateM(viewMatrix, 0, 0f, -1.5f, -5f);
-        multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
     }
 
     @Override
     public void onDrawFrame(GL10 gl10) {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        drawSkybox();
+        drawParticles();
+    }
+
+    private void drawSkybox() {
+        setIdentityM(viewMatrix, 0);
+        rotateM(viewMatrix, 0, -yRotation, 1f, 0f, 0f);
+        rotateM(viewMatrix, 0, -xRotation, 0f, 1f, 0f);
+        multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+        skeyboxShaderProgram.useProgram();
+        skeyboxShaderProgram.setUniform(viewProjectionMatrix, skyboxTexture);
+        skybox.bindData(skeyboxShaderProgram);
+        skybox.draw();
+    }
+
+    private void drawParticles() {
         float currentTime = (System.nanoTime() - globalStartTime) / 1000000000f;
 
-        redParticleShooter.addParticles(particleSystem, currentTime, 5);
-        greenParticleShooter.addParticles(particleSystem, currentTime, 5);
-        blueParticleShooter.addParticles(particleSystem, currentTime, 5);
+        redParticleShooter.addParticles(particleSystem, currentTime, 1);
+        greenParticleShooter.addParticles(particleSystem, currentTime, 1);
+        blueParticleShooter.addParticles(particleSystem, currentTime, 1);
+
+        setIdentityM(viewMatrix, 0);
+        rotateM(viewMatrix, 0, -yRotation, 1f, 0f, 0f);
+        rotateM(viewMatrix, 0, -xRotation, 0f, 1f, 0f);
+        translateM(viewMatrix, 0, 0f, -1.5f, -5f);
+        multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
 
         particleShaderProgram.useProgram();
-        particleShaderProgram.setUniforms(viewProjectionMatrix, currentTime, texture);
+        particleShaderProgram.setUniforms(viewProjectionMatrix, currentTime, particleTexture);
         particleSystem.bindData(particleShaderProgram);
         particleSystem.draw();
+
+        glDisable(GL_BLEND);
+    }
+
+    public void handleTouchDrag(float deltX, float deltY) {
+        xRotation += deltX / 16f;
+        yRotation += deltY / 16f;
+
+        if (yRotation < -90) {
+            yRotation = -90;
+        } else if (yRotation > 90) {
+            yRotation = 90;
+        }
+
     }
 }
