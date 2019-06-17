@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import opengl.xingfeng.com.opengldemo.particles.ParticlesActivity;
 import opengl.xingfeng.com.opengldemo.record.RecordMainActivity;
 import opengl.xingfeng.com.opengldemo.water.ESWaterActivity;
 
@@ -26,7 +27,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             EglDemoActivity.class,
             FBOActivity.class,
             ESWaterActivity.class,
-            RecordMainActivity.class
+            RecordMainActivity.class,
+            ParticlesActivity.class
     };
 
 
@@ -56,7 +58,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "EGLDemo",
                 "FBODemo",
                 "OPENGLES 添加水印",
-                "音频视频合成"
+                "音频视频合成",
+                "粒子动画"
         };
 
         @Override

@@ -45,7 +45,8 @@
         <activity android:name=".water.ESWaterActivity" />
         <activity android:name=".record.RecordMainActivity" />
         <activity android:name=".record.CameraActivity" />
-        <activity android:name=".record.RecodeActivity"></activity>
+        <activity android:name=".record.RecodeActivity" />
+        <activity android:name=".particles.ParticlesActivity"></activity>
     </application>
 
 </manifest>
