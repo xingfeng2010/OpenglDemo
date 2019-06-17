@@ -46,7 +46,8 @@
         <activity android:name=".record.RecordMainActivity" />
         <activity android:name=".record.CameraActivity" />
         <activity android:name=".record.RecodeActivity" />
-        <activity android:name=".particles.ParticlesActivity"></activity>
+        <activity android:name=".particles.ParticlesActivity" />
+        <activity android:name=".firework.FireworkActivity"></activity>
     </application>
 
 </manifest>

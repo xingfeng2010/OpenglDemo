@@ -39,4 +39,8 @@ public class VertexArray {
         floatBuffer.put(vertexData, start, count);
         floatBuffer.position(0);
     }
+
+    public void clearBuffer() {
+        floatBuffer.clear();
+    }
 }
