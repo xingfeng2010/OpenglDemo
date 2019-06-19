@@ -15,6 +15,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import opengl.xingfeng.com.opengldemo.firework.FireworkActivity;
+import opengl.xingfeng.com.opengldemo.heightmap.HeightmapActivity;
 import opengl.xingfeng.com.opengldemo.particles.ParticlesActivity;
 import opengl.xingfeng.com.opengldemo.record.RecordMainActivity;
 import opengl.xingfeng.com.opengldemo.water.ESWaterActivity;
@@ -30,7 +31,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             ESWaterActivity.class,
             RecordMainActivity.class,
             ParticlesActivity.class,
-            FireworkActivity.class
+            FireworkActivity.class,
+            HeightmapActivity.class
     };
 
 
@@ -62,7 +64,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "OPENGLES 添加水印",
                 "音频视频合成",
                 "粒子动画",
-                "烟花效果"
+                "烟花效果",
+                "地图效果"
         };
 
         @Override
