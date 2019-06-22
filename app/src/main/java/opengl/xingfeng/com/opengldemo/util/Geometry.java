@@ -87,6 +87,10 @@ public class Geometry {
                     (z * other.x) - (x * other.z),
                     (x * other.y) - (y * other.x));
         }
+
+        public Vector normalize() {
+            return scale(1f / length());
+        }
     }
 
     public static class Sphere {
