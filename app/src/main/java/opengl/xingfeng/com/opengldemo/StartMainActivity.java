@@ -18,6 +18,7 @@ import opengl.xingfeng.com.opengldemo.firework.FireworkActivity;
 import opengl.xingfeng.com.opengldemo.heightmap.HeightmapActivity;
 import opengl.xingfeng.com.opengldemo.particles.ParticlesActivity;
 import opengl.xingfeng.com.opengldemo.record.RecordMainActivity;
+import opengl.xingfeng.com.opengldemo.texturecompress.CompressedTextureActivity;
 import opengl.xingfeng.com.opengldemo.water.ESWaterActivity;
 
 public class StartMainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
@@ -32,7 +33,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             RecordMainActivity.class,
             ParticlesActivity.class,
             FireworkActivity.class,
-            HeightmapActivity.class
+            HeightmapActivity.class,
+            CompressedTextureActivity.class
     };
 
 
@@ -65,7 +67,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "音频视频合成",
                 "粒子动画",
                 "烟花效果",
-                "地图效果"
+                "地图效果",
+                "纹理压缩"
         };
 
         @Override

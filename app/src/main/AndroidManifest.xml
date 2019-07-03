@@ -48,7 +48,8 @@
         <activity android:name=".record.RecodeActivity" />
         <activity android:name=".particles.ParticlesActivity" />
         <activity android:name=".firework.FireworkActivity" />
-        <activity android:name=".heightmap.HeightmapActivity"></activity>
+        <activity android:name=".heightmap.HeightmapActivity" />
+        <activity android:name=".texturecompress.CompressedTextureActivity"></activity>
     </application>
 
 </manifest>
