@@ -49,7 +49,8 @@
         <activity android:name=".particles.ParticlesActivity" />
         <activity android:name=".firework.FireworkActivity" />
         <activity android:name=".heightmap.HeightmapActivity" />
-        <activity android:name=".texturecompress.CompressedTextureActivity"></activity>
+        <activity android:name=".texturecompress.CompressedTextureActivity" />
+        <activity android:name=".machinestate.StateActivity"></activity>
     </application>
 
 </manifest>

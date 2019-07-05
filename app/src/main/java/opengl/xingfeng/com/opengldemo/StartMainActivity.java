@@ -16,6 +16,7 @@ import java.util.List;
 
 import opengl.xingfeng.com.opengldemo.firework.FireworkActivity;
 import opengl.xingfeng.com.opengldemo.heightmap.HeightmapActivity;
+import opengl.xingfeng.com.opengldemo.machinestate.StateActivity;
 import opengl.xingfeng.com.opengldemo.particles.ParticlesActivity;
 import opengl.xingfeng.com.opengldemo.record.RecordMainActivity;
 import opengl.xingfeng.com.opengldemo.texturecompress.CompressedTextureActivity;
@@ -34,7 +35,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             ParticlesActivity.class,
             FireworkActivity.class,
             HeightmapActivity.class,
-            CompressedTextureActivity.class
+            CompressedTextureActivity.class,
+            StateActivity.class
     };
 
 
@@ -68,7 +70,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "粒子动画",
                 "烟花效果",
                 "地图效果",
-                "纹理压缩"
+                "纹理压缩",
+                "状态机示例"
         };
 
         @Override
