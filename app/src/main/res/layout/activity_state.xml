@@ -1,26 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".machinestate.StateActivity">
 
-    <Button
+    <ImageView
+        android:id="@+id/dringmachin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="INIT"
-        android:onClick="init"/>
+        android:layout_height="700dp"
+        android:src="@mipmap/buydrink"/>
 
-    <Button
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/curretn_tips"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="active"
-        android:text="ACTIVE"/>
+        android:layout_above="@+id/buttonPanel"
+        android:layout_marginBottom="5dp"/>
 
-    <Button
+    <LinearLayout
+        android:id="@+id/buttonPanel"
+        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="inactive"
-        android:text="INACTIVE"/>
-</LinearLayout>
+        android:orientation="horizontal"
+        android:layout_marginBottom="5dp">
+
+        <Button
+            android:id="@+id/push_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="投钱一元"
+            android:onClick="pushMoney"
+            android:src="@drawable/button_bg" />
+
+        <Button
+            android:id="@+id/buy_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="buyDring"
+            android:text="购买"
+            android:src="@drawable/button_bg"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="tuiBi"
+            android:text="退币"/>
+    </LinearLayout>
+</RelativeLayout>
