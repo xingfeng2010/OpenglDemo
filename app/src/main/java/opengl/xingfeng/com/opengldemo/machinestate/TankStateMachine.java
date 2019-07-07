@@ -1,41 +1,14 @@
 package opengl.xingfeng.com.opengldemo.machinestate;
 
+import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelUuid;
 
 public class TankStateMachine extends StateMachine{
-    static final int CMD_BASE = 0;
-    static final int CMD_ATTACK = CMD_BASE+1;    //有武器就发射；没武器就什么都不干
-    static final int CMD_SETUP_BASE = CMD_BASE+2;    //安装基座
-    static final int CMD_REMOVE_BASE = CMD_BASE+3;    //卸载基座
-    static final int CMD_SETUP_BARREL = CMD_BASE+4;    //安装炮筒
-    static final int CMD_REMOVE_BARREL = CMD_BASE+5;    //卸载炮筒
-    static final int CMD_SETUP_BIG_BARREL = CMD_BASE+6;    //安装大口径炮筒
-    static final int CMD_REMOVE_BIG_BARREL = CMD_BASE+7;    //卸载大口径炮筒
-    static final int CMD_ADD_MISSILE = CMD_BASE+8;    //装填导弹
-    static final int CMD_LAUNCH_MISSILE = CMD_BASE+9;    //发射导弹
-    static final int CMD_REMOVE_MISSLE = CMD_BASE+10;    //移除导弹
-    static final int CMD_ADD_ROCKET = CMD_BASE+11;    //装填火箭
-    static final int CMD_LAUNCH_ROCKET = CMD_BASE+12;    //发射火箭
-    static final int CMD_REMOVE_ROCKET = CMD_BASE+13;    //移除火箭
-    private static final int CMD_SETUP_BIGBARREL = CMD_BASE+14;
-    private static final int CMD_REMOVE_BIGBARREL = CMD_BASE+15;
-    private static final int CMD_BASE_SETUP_SUCCESSED = CMD_BASE+16;
-
-    //这里先创建出一大波Concrete State的实例来
-    State mDefaultState;
-    State mBaseSetupStartingState;
-    State mBaseSetupFinishedState ;
-    State mBarrelSetupStartingState ;
-    State mBarrelSetupFinishedState ;
-    State mBigBarrelSetupStartingState ;
-    State mBigBarrelSetupFinishedState ;
-    State mAddMissileSuccessedState ;
-    State mAddRocketSuccessedState ;
 
     //构造器里要做的工作：State
-    public TankStateMachine(String name) {
-        super(null);
+    public TankStateMachine(String name, Handler handler) {
+        super("",handler);
         //这里先创建出一大波Concrete State的实例来
         mDefaultState = new DefaultState();
         mBaseSetupStartingState = new BaseSetupStartingState();
@@ -60,6 +33,8 @@ public class TankStateMachine extends StateMachine{
 
        //设置tank的初始状态为DefaultState，表示tank上还没有安装底座
         setInitialState(mDefaultState);
+
+        start();
     }
 
     //======================下面依次定义所有的状态类============================
@@ -313,4 +288,33 @@ public class TankStateMachine extends StateMachine{
     public void launchRocket() {
         sendMessage(CMD_LAUNCH_ROCKET);
     }
+
+    //这里先创建出一大波Concrete State的实例来
+    State mDefaultState;
+    State mBaseSetupStartingState;
+    State mBaseSetupFinishedState ;
+    State mBarrelSetupStartingState ;
+    State mBarrelSetupFinishedState ;
+    State mBigBarrelSetupStartingState ;
+    State mBigBarrelSetupFinishedState ;
+    State mAddMissileSuccessedState ;
+    State mAddRocketSuccessedState ;
+
+    static final int CMD_BASE = 0;
+    static final int CMD_ATTACK = CMD_BASE+1;    //有武器就发射；没武器就什么都不干
+    static final int CMD_SETUP_BASE = CMD_BASE+2;    //安装基座
+    static final int CMD_REMOVE_BASE = CMD_BASE+3;    //卸载基座
+    static final int CMD_SETUP_BARREL = CMD_BASE+4;    //安装炮筒
+    static final int CMD_REMOVE_BARREL = CMD_BASE+5;    //卸载炮筒
+    static final int CMD_SETUP_BIG_BARREL = CMD_BASE+6;    //安装大口径炮筒
+    static final int CMD_REMOVE_BIG_BARREL = CMD_BASE+7;    //卸载大口径炮筒
+    static final int CMD_ADD_MISSILE = CMD_BASE+8;    //装填导弹
+    static final int CMD_LAUNCH_MISSILE = CMD_BASE+9;    //发射导弹
+    static final int CMD_REMOVE_MISSLE = CMD_BASE+10;    //移除导弹
+    static final int CMD_ADD_ROCKET = CMD_BASE+11;    //装填火箭
+    static final int CMD_LAUNCH_ROCKET = CMD_BASE+12;    //发射火箭
+    static final int CMD_REMOVE_ROCKET = CMD_BASE+13;    //移除火箭
+    private static final int CMD_SETUP_BIGBARREL = CMD_BASE+14;
+    private static final int CMD_REMOVE_BIGBARREL = CMD_BASE+15;
+    private static final int CMD_BASE_SETUP_SUCCESSED = CMD_BASE+16;
 }
