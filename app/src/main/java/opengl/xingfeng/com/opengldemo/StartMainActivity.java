@@ -3,7 +3,6 @@ package opengl.xingfeng.com.opengldemo;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.List;
-
+import opengl.xingfeng.com.opengldemo.beautycamera.BeautyPermissionActivity;
 import opengl.xingfeng.com.opengldemo.firework.FireworkActivity;
 import opengl.xingfeng.com.opengldemo.heightmap.HeightmapActivity;
 import opengl.xingfeng.com.opengldemo.machinestate.StateActivity;
@@ -36,7 +34,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             FireworkActivity.class,
             HeightmapActivity.class,
             CompressedTextureActivity.class,
-            StateActivity.class
+            StateActivity.class,
+            BeautyPermissionActivity.class
     };
 
 
@@ -71,7 +70,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "烟花效果",
                 "地图效果",
                 "纹理压缩",
-                "状态机示例"
+                "状态机示例",
+                "相机美颜"
         };
 
         @Override
