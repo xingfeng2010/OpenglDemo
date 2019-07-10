@@ -17,9 +17,15 @@ public class Camera1Renderer implements CustomSurfaceView.Render {
     private SurfaceTexture mSurfacTexture;
     private SurfaceCreateCallback mSurfaceCreateCallback;
 
+    private ShowFilter showFilter;
+    private EffectFilterRender effectFilterRender;
+
 
     public Camera1Renderer(Context context) {
         mContext = context;
+
+        effectFilterRender = new EffectFilterRender(context);
+        showFilter = new ShowFilter(context);
     }
 
     public int getTexture() {
@@ -30,6 +36,8 @@ public class Camera1Renderer implements CustomSurfaceView.Render {
     public void onSurfaceCreated() {
         beautyShaderProgram = new BeautyShaderProgram(mContext);
         GLES20.glClearColor(255.0f, 255.0f, 255.0f, 1.0f);
+
+
 
         mTexture = TextureHelper.loadTexture();
         mSurfacTexture = new SurfaceTexture(mTexture);
@@ -43,6 +51,12 @@ public class Camera1Renderer implements CustomSurfaceView.Render {
         GLES20.glViewport(0, 0, width, height);
 
         MatrixUtils.getMatrix(mMVPMatrix, mShowType, 720, 1280, width, height);
+
+
+        showFilter.setSize(width, height);
+        showFilter.setMatrix(mMVPMatrix);
+        effectFilterRender.setSize(mDataSize.x,mDataSize.y);
+        showFilter.setSize(mDataSize.x,mDataSize.y);
     }
 
     @Override
@@ -61,6 +75,7 @@ public class Camera1Renderer implements CustomSurfaceView.Render {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         beautyShaderProgram.afterDraw();
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
     }
 
 

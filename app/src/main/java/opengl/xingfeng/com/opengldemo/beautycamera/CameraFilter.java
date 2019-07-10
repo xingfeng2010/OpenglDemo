@@ -1,6 +1,7 @@
 package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
+import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 
 public class CameraFilter implements CustomSurfaceView.Render{
@@ -10,14 +11,16 @@ public class CameraFilter implements CustomSurfaceView.Render{
 
     private BeautyShaderProgram beautyShaderProgram;
 
+    private Context mContext;
+
     public CameraFilter(Context context) {
-        beautyShaderProgram = new BeautyShaderProgram(context);
+        mContext = context;
     }
 
 
     @Override
     public void onSurfaceCreated() {
-
+        beautyShaderProgram = new BeautyShaderProgram(mContext);
     }
 
     @Override
@@ -27,12 +30,10 @@ public class CameraFilter implements CustomSurfaceView.Render{
 
     @Override
     public void onDrawFrame() {
-        beautyShaderProgram.useProgram();
-        mSurfacTexture.getTransformMatrix(mTextureMatrix);
         beautyShaderProgram.setUniforms();
-        beautyShaderProgram.setMatrix(mMVPMatrix, mTextureMatrix);
+        beautyShaderProgram.setMatrix(matrix, textureMatrix);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture);
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         GLES20.glUniform1i(beautyShaderProgram.getTextureUnitLocation(), 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         beautyShaderProgram.afterDraw();

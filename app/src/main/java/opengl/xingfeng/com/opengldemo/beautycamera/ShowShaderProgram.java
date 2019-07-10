@@ -9,15 +9,7 @@ import java.nio.FloatBuffer;
 
 import opengl.xingfeng.com.opengldemo.R;
 
-public class BeautyShaderProgram extends MyShaderProgram {
-    // Uniform locaitons
-    private int uMatrixLocation;
-    private int uTextuUnitLocation;
-    private int uCoordMatrixLocation;
-
-    //Attriocations
-    private int aPositionLocation;
-    private int aTextureCoordLocation;
+public class ShowShaderProgram extends MyShaderProgram{
 
     //顶点坐标
     private float vertex[] = {
@@ -28,18 +20,27 @@ public class BeautyShaderProgram extends MyShaderProgram {
     };
 
     //纹理坐标
-    private float[] coord={
+    private float[] coord = {
             0.0f, 0.0f,
             0.0f,  1.0f,
             1.0f,  0.0f,
             1.0f, 1.0f,
     };
 
+
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
 
-    protected BeautyShaderProgram(Context context) {
-        super(context, R.raw.oes_base_vertex, R.raw.oes_base_fragment);
+    // Uniform locaitons
+    private int uMatrixLocation;
+    private int uTextuUnitLocation;
+
+    //Attriocations
+    private int aPositionLocation;
+    private int aTextureCoordLocation;
+
+    protected ShowShaderProgram(Context context) {
+        super(context, R.raw.base_vertex_shader, R.raw.base_fragment_shader);
 
         mVertexBuffer = ByteBuffer.allocateDirect(vertex.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -55,7 +56,6 @@ public class BeautyShaderProgram extends MyShaderProgram {
 
         uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
         uTextuUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);
-        uCoordMatrixLocation = GLES20.glGetUniformLocation(program, U_COOD_MATRIX);
 
         aPositionLocation = GLES20.glGetAttribLocation(program, A_POSITION);
         aTextureCoordLocation = GLES20.glGetAttribLocation(program, A_TEXTURE_COORDINATES);
@@ -73,15 +73,13 @@ public class BeautyShaderProgram extends MyShaderProgram {
         GLES20.glDisableVertexAttribArray(aPositionLocation);
         GLES20.glDisableVertexAttribArray(aTextureCoordLocation);
         GLES20.glDisableVertexAttribArray(uMatrixLocation);
-        GLES20.glDisableVertexAttribArray(uCoordMatrixLocation);
     }
 
     public int getTextureUnitLocation() {
         return uTextuUnitLocation;
     }
 
-    public void setMatrix(float[] mMVPMatrix, float[] mTextureMatrix) {
+    public void setMatrix(float[] mMVPMatrix) {
         GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,mMVPMatrix,0);
-        GLES20.glUniformMatrix4fv(uCoordMatrixLocation,1,false,mTextureMatrix,0);
     }
 }
