@@ -82,4 +82,7 @@ public class EffectFilterRender implements CustomSurfaceView.Render{
         cameraFilter.onDrawFrame();
         EasyGlUtils.unBindFrameBuffer();
     }
+
+    public void setSize(int x, int y) {
+    }
 }

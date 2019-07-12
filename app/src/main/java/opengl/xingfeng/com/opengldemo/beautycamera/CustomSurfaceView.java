@@ -2,6 +2,7 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -80,9 +81,9 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
         }
     }
 
-    public void setSurfaceAndEglContext(Surface surface, EGLContext eglContext) {
+    public void setSurface(Surface surface) {
         this.mSurface = surface;
-        this.mEglContext = eglContext;
+    //    this.mEglContext = eglContext;
     }
 
     public EGLContext getEglContext() {
@@ -93,6 +94,7 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
     }
 
     private static class EGLThread extends Thread {
+        private static final String TAG = "EGLThread";
         private boolean isCreate;
 
         private int width;
@@ -115,7 +117,7 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
             try {
                 guardedRun();
             } catch (Exception e) {
-
+                Log.i(TAG, "guardedRun exception:" + e.toString());
             }
         }
 
