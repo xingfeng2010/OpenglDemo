@@ -1,6 +1,7 @@
 package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,8 @@ import android.widget.SeekBar;
 import java.io.IOException;
 
 import opengl.xingfeng.com.opengldemo.R;
+import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowFilter;
+import opengl.xingfeng.com.opengldemo.record.CameraFboRender;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
 
 import static opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.RENDERMODE_CONTINUOUSLY;
@@ -22,8 +25,9 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
-    private Camera1Renderer render;
+    private ShowFilter render;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    private CameraHelper cameraHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +37,11 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         customSurfaceView.setRenderMode(RENDERMODE_CONTINUOUSLY);
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
 
-        render = new Camera1Renderer(this);
+        render = new ShowFilter(this);
         customSurfaceView.setRender(render);
+        cameraHelper = new CameraHelper(this);
 
+        previewAngle(this);
         render.setSurfaceCreateCallback(this);
         appCompatSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -58,47 +64,16 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void surfaceCreated(SurfaceTexture surfaceTexture) {
         openCamera(surfaceTexture);
-//        try {
-//            mCamera = getCameraInstance();
-//            mCamera.setPreviewTexture(surfaceTexture);
-//            mCamera.setDisplayOrientation(90);
-//            mCamera.startPreview();
-//        } catch (IOException e) {
-//
-//        }
     }
 
     public void openCamera(SurfaceTexture surfaceTexture) {
-        CameraHelper helper = new CameraHelper(this);
-        helper.startCamera(surfaceTexture, 0);
+        cameraHelper.startCamera(surfaceTexture,cameraId);
         surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
                 @Override
                 public void onFrameAvailable(SurfaceTexture surfaceTexture) {
                     customSurfaceView.requestRender();
                 }
             });
-
-//        if (mCamera != null) {
-//            mCamera.stopPreview();
-//            mCamera.release();
-//            mCamera = null;
-//        }
-//        mCamera = Camera.open();
-//       // mController.setImageDirection(cameraId);
-//        Camera.Size size = mCamera.getParameters().getPreviewSize();
-//        camera1Renderer.setDataSize(size.width, size.height);
-//        try {
-//            mCamera.setPreviewTexture(surfaceTexture);
-//            surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
-//                @Override
-//                public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-//                    customSurfaceView.requestRender();
-//                }
-//            });
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        mCamera.startPreview();
     }
 
     public void onClick(View view) {
@@ -140,5 +115,11 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        previewAngle(this);
     }
 }

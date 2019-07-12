@@ -41,7 +41,7 @@ public class ShowScreenProgram  extends MyShaderProgram{
     private int vboId;
 
     protected ShowScreenProgram(Context context) {
-        super(context, R.raw.show_screen_vertex_shader, R.raw.show_screen_fragment_shader);
+        super(context);
 
         mVertexBuffer = ByteBuffer.allocateDirect(vertex.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -52,10 +52,13 @@ public class ShowScreenProgram  extends MyShaderProgram{
         mTextureBuffer = ByteBuffer.allocateDirect(coord.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
-                .put(vertex);
+                .put(coord);
         mTextureBuffer.position(0);
+    }
 
-        uTextuUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);
+    protected void init() {
+        super.init(R.raw.show_screen_vertex_shader, R.raw.show_screen_fragment_shader);
+
 
         aPositionLocation = GLES20.glGetAttribLocation(program, A_POSITION);
         aTextureCoordLocation = GLES20.glGetAttribLocation(program, A_TEXTURE_COORDINATES);

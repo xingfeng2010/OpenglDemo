@@ -2,6 +2,6 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.graphics.SurfaceTexture;
 
-interface SurfaceCreateCallback {
+public interface SurfaceCreateCallback {
     void surfaceCreated(SurfaceTexture surfaceTexture);
 }

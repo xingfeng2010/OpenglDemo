@@ -49,7 +49,7 @@ public class ShowShaderProgram extends MyShaderProgram {
     private int inputTextureId;
 
     protected ShowShaderProgram(Context context) {
-        super(context, R.raw.camera_fbo_vertex_shader, R.raw.camera_fbo_fragment_shader);
+        super(context);
 
         mVertexBuffer = ByteBuffer.allocateDirect(vertex.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -60,8 +60,12 @@ public class ShowShaderProgram extends MyShaderProgram {
         mTextureBuffer = ByteBuffer.allocateDirect(coord.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
-                .put(vertex);
+                .put(coord);
         mTextureBuffer.position(0);
+    }
+
+    protected void init() {
+        super.init(R.raw.camera_fbo_vertex_shader, R.raw.camera_fbo_fragment_shader);
 
         uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
         uTextuUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);

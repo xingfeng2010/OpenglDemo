@@ -22,16 +22,21 @@ public abstract class MyShaderProgram {
     protected static final String A_TEXTURE_COORDINATES = "a_TextureCoordinates";
 
     // Shader program
-    protected final int program;
+    protected int program;
+    protected Context mContext;
 
-    protected MyShaderProgram(Context context, int vertexShaderResourceId,
-                              int fragmentShaderResourceId) {
+    protected MyShaderProgram(Context context) {
         // Compile the shaders and link the program.
+        mContext = context;
+
+    }
+
+    protected void init(int vertexShaderResourceId, int fragmentShaderResourceId) {
         program = ShaderHelper.buildProgram(
                 TextResourceReader
-                        .readTextFileFromResource(context, vertexShaderResourceId),
+                        .readTextFileFromResource(mContext, vertexShaderResourceId),
                 TextResourceReader
-                        .readTextFileFromResource(context, fragmentShaderResourceId));
+                        .readTextFileFromResource(mContext, fragmentShaderResourceId));
     }
 
     public void useProgram() {

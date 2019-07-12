@@ -13,11 +13,15 @@ public class ShowScreenRender implements CustomSurfaceView.Render{
 
     public ShowScreenRender(Context context) {
         mContext = context;
+        showScreenProgram = new ShowScreenProgram(mContext);
     }
 
     @Override
     public void onSurfaceCreated() {
-        showScreenProgram = new ShowScreenProgram(mContext);
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        showScreenProgram.init();
     }
 
     @Override

@@ -8,6 +8,8 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView;
+import opengl.xingfeng.com.opengldemo.beautycamera.EffectFilterRender;
+import opengl.xingfeng.com.opengldemo.beautycamera.SurfaceCreateCallback;
 import opengl.xingfeng.com.opengldemo.util.DisplayUtil;
 import opengl.xingfeng.com.opengldemo.util.Gl2Utils;
 
@@ -21,9 +23,13 @@ public class ShowFilter implements CustomSurfaceView.Render {
 
     private ShowScreenRender showScreenRender;
 
+    private EffectFilterRender effectFilterRender;
+    private SurfaceCreateCallback surfaceCreateCallback;
+
     public ShowFilter(Context context) {
         mContext = context;
         showScreenRender = new ShowScreenRender(context);
+        showShaderProgram = new ShowShaderProgram(mContext);
     }
 
     public SurfaceTexture getSurfaceTexture() {
@@ -32,10 +38,11 @@ public class ShowFilter implements CustomSurfaceView.Render {
 
     @Override
     public void onSurfaceCreated() {
+        showShaderProgram.init();
         screenWidth = DisplayUtil.getScreenW(mContext);
         screenHeight = DisplayUtil.getScreenH(mContext);
 
-        showShaderProgram = new ShowShaderProgram(mContext);
+
         showShaderProgram.createVBO();
         showShaderProgram.createFBO(screenWidth, screenHeight);
         showShaderProgram.createCameraRenderTexture();
@@ -45,6 +52,9 @@ public class ShowFilter implements CustomSurfaceView.Render {
 
         showScreenRender.setInputTexture(showShaderProgram.getOnputTextureId());
         showScreenRender.onSurfaceCreated();
+        if (surfaceCreateCallback != null) {
+            surfaceCreateCallback.surfaceCreated(surfaceTexture);
+        }
         Log.i("EGLThread", "onSurfaceCreated: " + Thread.currentThread().getName());
     }
 
@@ -110,5 +120,9 @@ public class ShowFilter implements CustomSurfaceView.Render {
     public void setAngle(float angle, float x, float y, float z) {
         //旋转
         Matrix.rotateM(matrix, 0, angle, x, y, z);
+    }
+
+    public void setSurfaceCreateCallback(SurfaceCreateCallback surfaceCreateCallback) {
+        this.surfaceCreateCallback = surfaceCreateCallback;
     }
 }

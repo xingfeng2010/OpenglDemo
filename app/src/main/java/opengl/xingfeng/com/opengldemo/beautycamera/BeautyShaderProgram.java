@@ -39,7 +39,7 @@ public class BeautyShaderProgram extends MyShaderProgram {
     private FloatBuffer mTextureBuffer;
 
     protected BeautyShaderProgram(Context context) {
-        super(context, R.raw.oes_base_vertex, R.raw.oes_base_fragment);
+        super(context);
 
         mVertexBuffer = ByteBuffer.allocateDirect(vertex.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -52,6 +52,11 @@ public class BeautyShaderProgram extends MyShaderProgram {
                 .asFloatBuffer()
                 .put(vertex);
         mTextureBuffer.position(0);
+    }
+
+    protected void init() {
+        super.init(R.raw.oes_base_vertex, R.raw.oes_base_fragment);
+
 
         uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
         uTextuUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);
