@@ -25,7 +25,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
-    private ShowFilter render;
+    private Camera1Renderer render;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private CameraHelper cameraHelper;
 
@@ -37,7 +37,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         customSurfaceView.setRenderMode(RENDERMODE_CONTINUOUSLY);
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
 
-        render = new ShowFilter(this);
+        render = new Camera1Renderer(this);
         customSurfaceView.setRender(render);
         cameraHelper = new CameraHelper(this);
 

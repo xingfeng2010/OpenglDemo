@@ -24,7 +24,6 @@ public class ShowFilter implements CustomSurfaceView.Render {
     private ShowScreenRender showScreenRender;
 
     private EffectFilterRender effectFilterRender;
-    private SurfaceCreateCallback surfaceCreateCallback;
 
     public ShowFilter(Context context) {
         mContext = context;
@@ -52,9 +51,6 @@ public class ShowFilter implements CustomSurfaceView.Render {
 
         showScreenRender.setInputTexture(showShaderProgram.getOnputTextureId());
         showScreenRender.onSurfaceCreated();
-        if (surfaceCreateCallback != null) {
-            surfaceCreateCallback.surfaceCreated(surfaceTexture);
-        }
         Log.i("EGLThread", "onSurfaceCreated: " + Thread.currentThread().getName());
     }
 
@@ -120,9 +116,5 @@ public class ShowFilter implements CustomSurfaceView.Render {
     public void setAngle(float angle, float x, float y, float z) {
         //旋转
         Matrix.rotateM(matrix, 0, angle, x, y, z);
-    }
-
-    public void setSurfaceCreateCallback(SurfaceCreateCallback surfaceCreateCallback) {
-        this.surfaceCreateCallback = surfaceCreateCallback;
     }
 }
