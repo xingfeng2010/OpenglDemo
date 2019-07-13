@@ -63,6 +63,8 @@ public class BeautyRender implements CustomSurfaceView.Render {
         GLES20.glViewport(0, 0, width, height);
         lookupFilter.setTextureId(inputTexture);
         lookupFilter.onDrawFrame();
+        beautyFilter.setTextureId(inputTexture);
+        beautyFilter.onDrawFrame();
         unBindFrame();
 //
 //        textureIndex = 1;
