@@ -12,11 +12,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
-import java.io.IOException;
-
 import opengl.xingfeng.com.opengldemo.R;
-import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowFilter;
-import opengl.xingfeng.com.opengldemo.record.CameraFboRender;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
 
 import static opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.RENDERMODE_CONTINUOUSLY;
@@ -25,7 +21,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
-    private Camera1Renderer render;
+    private CameralRenderer render;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private CameraHelper cameraHelper;
 
@@ -37,7 +33,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         customSurfaceView.setRenderMode(RENDERMODE_CONTINUOUSLY);
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
 
-        render = new Camera1Renderer(this);
+        render = new CameralRenderer(this);
         customSurfaceView.setRender(render);
         cameraHelper = new CameraHelper(this);
 
@@ -45,8 +41,9 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         render.setSurfaceCreateCallback(this);
         appCompatSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                render.setIntensity(progress/100f);
+                render.setFlag(progress/20+1);
             }
 
             @Override

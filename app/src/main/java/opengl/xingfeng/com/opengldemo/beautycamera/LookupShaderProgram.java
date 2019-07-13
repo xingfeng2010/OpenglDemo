@@ -9,15 +9,21 @@ import java.nio.FloatBuffer;
 
 import opengl.xingfeng.com.opengldemo.R;
 
-public class BeautyShaderProgram extends MyShaderProgram {
+public class LookupShaderProgram extends MyShaderProgram {
+    private static final String U_MASK_TEXTURE = "uMaskTexture";
+    private static final String U_INTENSITY = "uIntensity";
+
     // Uniform locaitons
     private int uMatrixLocation;
-    private int uTextuUnitLocation;
-    private int uCoordMatrixLocation;
+    private int uTextureUnitLocation;
+    private int mMaskTextureLocation;
+    private int mIntensityLocation;
 
     //Attriocations
     private int aPositionLocation;
     private int aTextureCoordLocation;
+
+    private float intensity;
 
     //顶点坐标
     private float vertex[] = {
@@ -28,7 +34,7 @@ public class BeautyShaderProgram extends MyShaderProgram {
     };
 
     //纹理坐标
-    private float[] coord={
+    private float[] coord ={
             0.0f, 0.0f,
             0.0f,  1.0f,
             1.0f,  0.0f,
@@ -38,7 +44,7 @@ public class BeautyShaderProgram extends MyShaderProgram {
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
 
-    protected BeautyShaderProgram(Context context) {
+    protected LookupShaderProgram(Context context) {
         super(context);
 
         mVertexBuffer = ByteBuffer.allocateDirect(vertex.length * BYTES_PER_FLOAT)
@@ -50,17 +56,17 @@ public class BeautyShaderProgram extends MyShaderProgram {
         mTextureBuffer = ByteBuffer.allocateDirect(coord.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
-                .put(vertex);
+                .put(coord);
         mTextureBuffer.position(0);
     }
 
     protected void init() {
-        super.init(R.raw.oes_base_vertex, R.raw.oes_base_fragment);
-
+        super.init(R.raw.lookup_vertex_shader, R.raw.lookup_fragment_shader);
 
         uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
-        uTextuUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);
-        uCoordMatrixLocation = GLES20.glGetUniformLocation(program, U_COOD_MATRIX);
+        uTextureUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);
+        mMaskTextureLocation = GLES20.glGetUniformLocation(program, U_MASK_TEXTURE);
+        mIntensityLocation = GLES20.glGetUniformLocation(program, U_INTENSITY);
 
         aPositionLocation = GLES20.glGetAttribLocation(program, A_POSITION);
         aTextureCoordLocation = GLES20.glGetAttribLocation(program, A_TEXTURE_COORDINATES);
@@ -78,15 +84,21 @@ public class BeautyShaderProgram extends MyShaderProgram {
         GLES20.glDisableVertexAttribArray(aPositionLocation);
         GLES20.glDisableVertexAttribArray(aTextureCoordLocation);
         GLES20.glDisableVertexAttribArray(uMatrixLocation);
-        GLES20.glDisableVertexAttribArray(uCoordMatrixLocation);
     }
 
     public int getTextureUnitLocation() {
-        return uTextuUnitLocation;
+        return uTextureUnitLocation;
     }
 
-    public void setMatrix(float[] mMVPMatrix, float[] mTextureMatrix) {
+    public void setMatrix(float[] mMVPMatrix) {
         GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,mMVPMatrix,0);
-        GLES20.glUniformMatrix4fv(uCoordMatrixLocation,1,false,mTextureMatrix,0);
+    }
+
+    public int getIntensityLocation () {
+        return mIntensityLocation;
+    }
+
+    public int getMaskTextureLocation () {
+        return mMaskTextureLocation;
     }
 }

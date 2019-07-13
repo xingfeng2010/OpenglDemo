@@ -2,18 +2,15 @@ package opengl.xingfeng.com.opengldemo.beautycamera.showfbo;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView;
-import opengl.xingfeng.com.opengldemo.beautycamera.EffectFilterRender;
-import opengl.xingfeng.com.opengldemo.beautycamera.SurfaceCreateCallback;
 import opengl.xingfeng.com.opengldemo.util.DisplayUtil;
 import opengl.xingfeng.com.opengldemo.util.Gl2Utils;
 
-public class ShowFilter implements CustomSurfaceView.Render {
+public class EffectFilter implements CustomSurfaceView.Render {
     private ShowShaderProgram showShaderProgram;
     private Context mContext;
     private float[] matrix = new float[16];
@@ -21,13 +18,8 @@ public class ShowFilter implements CustomSurfaceView.Render {
     private SurfaceTexture surfaceTexture;
     private int screenWidth, screenHeight;
 
-    private ShowScreenRender showScreenRender;
-
-    private EffectFilterRender effectFilterRender;
-
-    public ShowFilter(Context context) {
+    public EffectFilter(Context context) {
         mContext = context;
-        showScreenRender = new ShowScreenRender(context);
         showShaderProgram = new ShowShaderProgram(mContext);
     }
 
@@ -49,8 +41,6 @@ public class ShowFilter implements CustomSurfaceView.Render {
         surfaceTexture = new SurfaceTexture(showShaderProgram.getInputTextureId());
 //        showShaderProgram.setUniforms();
 
-        showScreenRender.setInputTexture(showShaderProgram.getOnputTextureId());
-        showScreenRender.onSurfaceCreated();
         Log.i("EGLThread", "onSurfaceCreated: " + Thread.currentThread().getName());
     }
 
@@ -58,7 +48,6 @@ public class ShowFilter implements CustomSurfaceView.Render {
     public void onSurfaceChanged(int width, int height) {
         GLES20.glViewport(0, 0, width, height);
        // Matrix.setIdentityM(matrix, 0);
-        showScreenRender.onSurfaceChanged(width, height);
     }
 
     @Override
@@ -80,8 +69,6 @@ public class ShowFilter implements CustomSurfaceView.Render {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         showShaderProgram.afterDraw();
         showShaderProgram.unbindFramebuffer();
-
-        showScreenRender.onDrawFrame();
     }
 
     public void setSize(int width, int height) {
@@ -116,5 +103,9 @@ public class ShowFilter implements CustomSurfaceView.Render {
     public void setAngle(float angle, float x, float y, float z) {
         //旋转
         Matrix.rotateM(matrix, 0, angle, x, y, z);
+    }
+
+    public int getOnputTextureId() {
+        return showShaderProgram.getOnputTextureId();
     }
 }
