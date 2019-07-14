@@ -8,19 +8,25 @@ import android.util.Log;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView;
 import opengl.xingfeng.com.opengldemo.util.DisplayUtil;
+import opengl.xingfeng.com.opengldemo.util.EasyGlUtils;
 import opengl.xingfeng.com.opengldemo.util.Gl2Utils;
 
 public class EffectFilter implements CustomSurfaceView.Render {
-    private ShowShaderProgram showShaderProgram;
+    private EffectShaderProgram showShaderProgram;
     private Context mContext;
     private float[] matrix = new float[16];
 
     private SurfaceTexture surfaceTexture;
-    private int screenWidth, screenHeight;
+    private int width, height;
+
+    private int[] fFrame = new int[1];
+    private int[] fTexture = new int[1];
+    private int[] mCameraTexture=new int[1];
+    private float[] mCoordOM=new float[16];
 
     public EffectFilter(Context context) {
         mContext = context;
-        showShaderProgram = new ShowShaderProgram(mContext);
+        showShaderProgram = new EffectShaderProgram(mContext);
     }
 
     public SurfaceTexture getSurfaceTexture() {
@@ -30,57 +36,50 @@ public class EffectFilter implements CustomSurfaceView.Render {
     @Override
     public void onSurfaceCreated() {
         showShaderProgram.init();
-        screenWidth = DisplayUtil.getScreenW(mContext);
-        screenHeight = DisplayUtil.getScreenH(mContext);
-
-
-        showShaderProgram.createVBO();
-        showShaderProgram.createFBO(screenWidth, screenHeight);
-        showShaderProgram.createCameraRenderTexture();
-
-        surfaceTexture = new SurfaceTexture(showShaderProgram.getInputTextureId());
-//        showShaderProgram.setUniforms();
-
+        createOesTexture();
+        surfaceTexture = new SurfaceTexture(mCameraTexture[0]);
         Log.i("EGLThread", "onSurfaceCreated: " + Thread.currentThread().getName());
     }
 
     @Override
     public void onSurfaceChanged(int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
-       // Matrix.setIdentityM(matrix, 0);
+        //GLES20.glViewport(0, 0, width, height);
+        //showShaderProgram.setSize(width, height);
+        this.width = width;
+        this.height = height;
+        //创建FrameBuffer和Texture
+        deleteFrameBuffer();
+        GLES20.glGenFramebuffers(1, fFrame, 0);
+        EasyGlUtils.genTexturesWithParameter(1, fTexture,0,GLES20.GL_RGBA,width,height);
     }
 
     @Override
     public void onDrawFrame() {
         Log.i("EGLThread", "onDrawFrame: " + Thread.currentThread().getName());
+        boolean a=GLES20.glIsEnabled(GLES20.GL_DEPTH_TEST);
+        if(a){
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        }
         if (surfaceTexture != null) {
             surfaceTexture.updateTexImage();
+
+            surfaceTexture.getTransformMatrix(mCoordOM);
+            showShaderProgram.setCoordMatrix(mCoordOM);
         }
-        //清空颜色
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        //设置背景颜色
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        EasyGlUtils.bindFrameTexture(fFrame[0],fTexture[0]);
+        GLES20.glViewport(0,0,width,height);
+        showShaderProgram.setTextureId(mCameraTexture[0]);
+        showShaderProgram.draw();
+        Log.e("wuwang","textureFilter draw");
+        EasyGlUtils.unBindFrameBuffer();
 
-        showShaderProgram.useProgram();
-        showShaderProgram.bindFramebuffer();
-        showShaderProgram.useExternalTexture();
-        showShaderProgram.setMatrix(matrix);
-        showShaderProgram.useVboSetVertext();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        showShaderProgram.afterDraw();
-        showShaderProgram.unbindFramebuffer();
-    }
-
-    public void setSize(int width, int height) {
-        Gl2Utils.getShowMatrix(matrix,width,height,screenWidth,screenHeight);
+        if(a){
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        }
     }
 
     public void setMatrix(float[] matrix) {
         // this.matrix = matrix;
-    }
-
-    public void setinputTextureId(int inputTextureId) {
-        //this.inputTextureId = inputTextureId;
     }
 
     /**
@@ -106,6 +105,15 @@ public class EffectFilter implements CustomSurfaceView.Render {
     }
 
     public int getOnputTextureId() {
-        return showShaderProgram.getOnputTextureId();
+        return fTexture[0];
+    }
+
+    private void deleteFrameBuffer() {
+        GLES20.glDeleteFramebuffers(1, fFrame, 0);
+        GLES20.glDeleteTextures(1, fTexture,0);
+    }
+
+    private void createOesTexture(){
+        GLES20.glGenTextures(1,mCameraTexture,0);
     }
 }

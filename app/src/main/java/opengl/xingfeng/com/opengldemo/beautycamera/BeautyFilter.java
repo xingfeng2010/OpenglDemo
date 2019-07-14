@@ -26,6 +26,7 @@ public class BeautyFilter implements CustomSurfaceView.Render{
     public BeautyFilter(Context context) {
         setFlag(0);
         beautyShaderProgram = new BeautyShaderProgram(context);
+        MatrixUtils.flip(matrix,false,true);
     }
 
     @Override
@@ -45,8 +46,8 @@ public class BeautyFilter implements CustomSurfaceView.Render{
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         beautyShaderProgram.useProgram();
-        beautyShaderProgram.setUniforms(mWidth, mHeight, iternum, aaCoef, mixCoef);
         beautyShaderProgram.setMatrix(matrix);
+        beautyShaderProgram.setUniforms(mWidth, mHeight, iternum, aaCoef, mixCoef);
         beautyShaderProgram.bindTexture(inputTextureId);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
         beautyShaderProgram.afterDraw();

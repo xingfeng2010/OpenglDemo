@@ -2,6 +2,7 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.opengl.GLES20;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.EffectFilter;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowScreenRender;
@@ -14,6 +15,12 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     private EffectFilter mEffectFilter;
     private BeautyRender beautyRender;
     private ShowScreenRender showScreenRender;
+
+    private float[] SM=new float[16];                           //用于绘制到屏幕上的变换矩阵
+    private int mShowType= MatrixUtils.TYPE_CENTERCROP;          //输出到屏幕上的方式
+
+    int previewWidth, previewHeight;
+    int screenWidth, screenHeight;
 
     public CameralRenderer(Context context) {
         mContext = context;
@@ -28,8 +35,6 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         mEffectFilter.onSurfaceCreated();
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
-        beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
-        showScreenRender.setInputTexture(beautyRender.getOnputTextureId());
         if (mSurfaceCreateCallback != null) {
             mSurfaceCreateCallback.surfaceCreated(mEffectFilter.getSurfaceTexture());
         }
@@ -37,15 +42,26 @@ public class CameralRenderer implements CustomSurfaceView.Render {
 
     @Override
     public void onSurfaceChanged(int width, int height) {
-        mEffectFilter.onSurfaceChanged(width, height);
-        beautyRender.onSurfaceChanged(width, height);
-        showScreenRender.onSurfaceChanged(width, height);
+        screenWidth = width;
+        screenHeight = height;
+//        this.previewWidth = width;
+//        this.previewHeight = height;
+
+        MatrixUtils.getMatrix(SM, mShowType, previewWidth, previewHeight, width, height);
+        showScreenRender.setMatrix(SM);
+        mEffectFilter.onSurfaceChanged(previewWidth, previewHeight);
+        beautyRender.onSurfaceChanged(previewWidth, previewHeight);
+        showScreenRender.onSurfaceChanged(previewWidth, previewHeight);
     }
 
     @Override
     public void onDrawFrame() {
+        GLES20.glViewport(0, 0, screenWidth, screenHeight);
         mEffectFilter.onDrawFrame();
+        beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
         beautyRender.onDrawFrame();
+        showScreenRender.setMatrix(SM);
+        showScreenRender.setInputTexture(beautyRender.getOnputTextureId());
         showScreenRender.onDrawFrame();
     }
 
@@ -82,5 +98,10 @@ public class CameralRenderer implements CustomSurfaceView.Render {
 
     public void setFlag(int flag) {
         beautyRender.setFlag(flag);
+    }
+
+    public void setPreViewSize(int previewWidth, int previewHeight) {
+        this.previewWidth = previewWidth;
+        this.previewHeight = previewHeight;
     }
 }

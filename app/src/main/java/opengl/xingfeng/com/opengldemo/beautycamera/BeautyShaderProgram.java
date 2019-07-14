@@ -98,7 +98,6 @@ public class BeautyShaderProgram extends MyShaderProgram{
     public void afterDraw() {
         GLES20.glDisableVertexAttribArray(aPositionLocation);
         GLES20.glDisableVertexAttribArray(aTextureCoordLocation);
-        GLES20.glDisableVertexAttribArray(uMatrixLocation);
     }
 
 

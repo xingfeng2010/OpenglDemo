@@ -1,20 +1,40 @@
 package opengl.xingfeng.com.opengldemo.beautycamera;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
+import android.util.Size;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
 
+import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.RENDERMODE_CONTINUOUSLY;
 
 public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback{
@@ -22,8 +42,15 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
     private CameralRenderer render;
-    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private CameraHelper cameraHelper;
+
+
+    private CameraDevice mDevice;
+    private CameraManager mCameraManager;
+    private Size mPreviewSize;
+    private HandlerThread mThread;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +63,12 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         render = new CameralRenderer(this);
         customSurfaceView.setRender(render);
         cameraHelper = new CameraHelper(this);
+        mCameraManager = (CameraManager)getSystemService(CAMERA_SERVICE);
+        mThread = new HandlerThread("camera2 ");
+        mThread.start();
+        mHandler = new Handler(mThread.getLooper());
 
-        previewAngle(this);
+        //previewAngle(this);
         render.setSurfaceCreateCallback(this);
         appCompatSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -60,17 +91,33 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     @Override
     public void surfaceCreated(SurfaceTexture surfaceTexture) {
-        openCamera(surfaceTexture);
+        //openCamera(surfaceTexture);
+        openCamera2(surfaceTexture);
     }
 
     public void openCamera(SurfaceTexture surfaceTexture) {
-        cameraHelper.startCamera(surfaceTexture,cameraId);
-        surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
+//        cameraHelper.startCamera(surfaceTexture,cameraId);
+//        render.setPreViewSize(cameraHelper.getPreviewWidth(), cameraHelper.getPreviewHeight());
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+        }
+        mCamera = Camera.open(cameraId);
+        Camera.Size size = mCamera.getParameters().getPreviewSize();
+        render.setPreViewSize(size.height, size.width);
+        try {
+            mCamera.setPreviewTexture(surfaceTexture);
+            mCamera.startPreview();
+            surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
                 @Override
                 public void onFrameAvailable(SurfaceTexture surfaceTexture) {
                     customSurfaceView.requestRender();
                 }
             });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void onClick(View view) {
@@ -119,4 +166,76 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         super.onConfigurationChanged(newConfig);
         previewAngle(this);
     }
+
+   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+   private void openCamera2(final SurfaceTexture surfaceTexture) {
+       try {
+           if(mDevice!=null){
+               mDevice.close();
+               mDevice=null;
+           }
+           CameraCharacteristics c=mCameraManager.getCameraCharacteristics(cameraId+"");
+           StreamConfigurationMap map=c.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+           Size[] sizes=map.getOutputSizes(SurfaceHolder.class);
+           //自定义规则，选个大小
+           mPreviewSize=sizes[0];
+          // mController.setDataSize(mPreviewSize.getHeight(),mPreviewSize.getWidth());
+           render.setPreViewSize(mPreviewSize.getHeight(),mPreviewSize.getWidth());
+           mCameraManager.openCamera(cameraId + "", new CameraDevice.StateCallback() {
+               @Override
+               public void onOpened(CameraDevice camera) {
+                   mDevice=camera;
+                   try {
+                       Surface surface=new Surface(surfaceTexture);
+                       final CaptureRequest.Builder builder=mDevice.createCaptureRequest
+                               (TEMPLATE_PREVIEW);
+                       builder.addTarget(surface);
+                       surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(),mPreviewSize.getHeight());
+                       mDevice.createCaptureSession(Arrays.asList(surface), new
+                               CameraCaptureSession.StateCallback() {
+                                   @Override
+                                   public void onConfigured(CameraCaptureSession session) {
+                                       try {
+                                           session.setRepeatingRequest(builder.build(), new CameraCaptureSession.CaptureCallback() {
+                                               @Override
+                                               public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request, CaptureResult partialResult) {
+                                                   super.onCaptureProgressed(session, request, partialResult);
+                                               }
+
+                                               @Override
+                                               public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+                                                   super.onCaptureCompleted(session, request, result);
+                                                   customSurfaceView.requestRender();
+                                               }
+                                           },mHandler);
+                                       } catch (CameraAccessException e) {
+                                           e.printStackTrace();
+                                       }
+                                   }
+
+                                   @Override
+                                   public void onConfigureFailed(CameraCaptureSession session) {
+
+                                   }
+                               },mHandler);
+                   } catch (CameraAccessException e) {
+                       e.printStackTrace();
+                   }
+               }
+
+               @Override
+               public void onDisconnected(CameraDevice camera) {
+                   mDevice=null;
+               }
+
+               @Override
+               public void onError(CameraDevice camera, int error) {
+
+               }
+           }, mHandler);
+       } catch (SecurityException | CameraAccessException e) {
+           e.printStackTrace();
+       }
+   }
+
 }

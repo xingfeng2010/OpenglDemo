@@ -14,18 +14,18 @@ import opengl.xingfeng.com.opengldemo.util.PermissionUtil;
 public class ShowScreenProgram  extends MyShaderProgram{
     //顶点坐标
     private float vertex[] = {
-            -1f, -1f, 0.0f, // bottom left
-            1f, -1f, 0.0f, // bottom right
-            -1f, 1f, 0.0f, // top left
-            1f, 1f, 0.0f,  // top right
+            -1.0f,  1.0f,
+            -1.0f, -1.0f,
+            1.0f, 1.0f,
+            1.0f,  -1.0f,
     };
 
     //纹理坐标
     private float[] coord = {
-            0f, 1f, 0.0f, // bottom left
-            1f, 1f, 0.0f, // bottom right
-            0f, 0f, 0.0f, // top left
-            1f, 0f, 0.0f,  // top right
+            0.0f, 0.0f,
+            0.0f,  1.0f,
+            1.0f,  0.0f,
+            1.0f, 1.0f,
     };
 
 
@@ -38,6 +38,7 @@ public class ShowScreenProgram  extends MyShaderProgram{
 
     // Uniform locaitons
     private int uTextuUnitLocation;
+    private int uMatrixLocation;
     private int vboId;
 
     protected ShowScreenProgram(Context context) {
@@ -63,20 +64,23 @@ public class ShowScreenProgram  extends MyShaderProgram{
         aPositionLocation = GLES20.glGetAttribLocation(program, A_POSITION);
         aTextureCoordLocation = GLES20.glGetAttribLocation(program, A_TEXTURE_COORDINATES);
         uTextuUnitLocation = GLES20.glGetUniformLocation(program, U_TEXTURE_UNIT);
+        uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
 
         createVBO();
     }
 
     public void setUniforms() {
         GLES20.glEnableVertexAttribArray(aPositionLocation);
-        GLES20.glVertexAttribPointer(aPositionLocation, 3, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
+        GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
 
         GLES20.glEnableVertexAttribArray(aTextureCoordLocation);
-        GLES20.glVertexAttribPointer(aTextureCoordLocation, 3, GLES20.GL_FLOAT, false, 0, mTextureBuffer);
+        GLES20.glVertexAttribPointer(aTextureCoordLocation, 2, GLES20.GL_FLOAT, false, 0, mTextureBuffer);
     }
 
     public void bindTexture(int inputTextureId) {
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,inputTextureId);
+        GLES20.glUniform1i(uTextuUnitLocation, 0);
     }
 
     public void afterDraw() {
@@ -116,9 +120,14 @@ public class ShowScreenProgram  extends MyShaderProgram{
         //1. 绑定VBO
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
         //2. 设置顶点数据
-        GLES20.glVertexAttribPointer(aPositionLocation, 3, GLES20.GL_FLOAT, false, 12, 0);
-        GLES20.glVertexAttribPointer(aTextureCoordLocation, 3, GLES20.GL_FLOAT, false, 12, vertex.length * 4);
+        GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 8, 0);
+        GLES20.glVertexAttribPointer(aTextureCoordLocation, 2, GLES20.GL_FLOAT, false, 8, vertex.length * 4);
         //3. 解绑VBO
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
+    public void setMatrix(float[] matrix) {
+        //GLES20.glEnableVertexAttribArray(uMatrixLocation);
+        GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,matrix,0);
     }
 }

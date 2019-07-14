@@ -3,13 +3,18 @@ package opengl.xingfeng.com.opengldemo.beautycamera.showfbo;
 import android.content.Context;
 import android.opengl.GLES20;
 
+import java.util.regex.Matcher;
+
 import opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView;
+import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 
 public class ShowScreenRender implements CustomSurfaceView.Render{
 
     private Context mContext;
     private int inputTexture;
     private ShowScreenProgram showScreenProgram;
+
+    private float[] matrix = MatrixUtils.getOriginalMatrix();
 
     public ShowScreenRender(Context context) {
         mContext = context;
@@ -39,6 +44,7 @@ public class ShowScreenRender implements CustomSurfaceView.Render{
 
         showScreenProgram.useProgram();
         //showScreenProgram.setUniforms();
+        showScreenProgram.setMatrix(matrix);
         showScreenProgram.bindTexture(inputTexture);
         showScreenProgram.useVboSetVertext();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
@@ -48,5 +54,9 @@ public class ShowScreenRender implements CustomSurfaceView.Render{
 
     public void setInputTexture(int inputTexture) {
         this.inputTexture = inputTexture;
+    }
+
+    public void setMatrix(float[] matrix) {
+        this.matrix = matrix;
     }
 }

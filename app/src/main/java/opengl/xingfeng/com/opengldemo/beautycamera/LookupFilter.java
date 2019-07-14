@@ -31,6 +31,7 @@ public class LookupFilter implements CustomSurfaceView.Render {
     public LookupFilter(Context context) {
         mContext = context;
         lookupShaderProgram = new LookupShaderProgram(context);
+        MatrixUtils.flip(matrix,false,true);
     }
 
     public void setIntensity(float value) {
@@ -68,7 +69,7 @@ public class LookupFilter implements CustomSurfaceView.Render {
 
         lookupShaderProgram.setUniforms();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
-        lookupShaderProgram.afterDraw();
+        //lookupShaderProgram.afterDraw();
     }
 
     public void setTextureId(int textureId) {
@@ -94,7 +95,7 @@ public class LookupFilter implements CustomSurfaceView.Render {
     protected void bindTexture(){
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0+textureType);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glUniform1i(lookupShaderProgram.getMaskTextureLocation(),textureType);
+        GLES20.glUniform1i(lookupShaderProgram.getTextureUnitLocation(),textureType);
     }
 
 }
