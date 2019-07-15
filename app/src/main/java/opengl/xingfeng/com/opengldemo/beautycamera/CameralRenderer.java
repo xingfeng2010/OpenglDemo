@@ -16,8 +16,8 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     private BeautyRender beautyRender;
     private ShowScreenRender showScreenRender;
 
-    private float[] SM=new float[16];                           //用于绘制到屏幕上的变换矩阵
-    private int mShowType= MatrixUtils.TYPE_CENTERCROP;          //输出到屏幕上的方式
+    private float[] SM = new float[16];                           //用于绘制到屏幕上的变换矩阵
+    private int mShowType = MatrixUtils.TYPE_CENTERCROP;          //输出到屏幕上的方式
 
     int previewWidth, previewHeight;
     int screenWidth, screenHeight;
@@ -44,10 +44,9 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     public void onSurfaceChanged(int width, int height) {
         screenWidth = width;
         screenHeight = height;
-//        this.previewWidth = width;
-//        this.previewHeight = height;
 
         MatrixUtils.getMatrix(SM, mShowType, previewWidth, previewHeight, width, height);
+        showScreenRender.onSurfaceChanged(width, height);
         showScreenRender.setMatrix(SM);
         mEffectFilter.onSurfaceChanged(previewWidth, previewHeight);
         beautyRender.onSurfaceChanged(previewWidth, previewHeight);
@@ -93,7 +92,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     }
 
     public void setIntensity(float value) {
-       beautyRender.setIntensity(value);
+        beautyRender.setIntensity(value);
     }
 
     public void setFlag(int flag) {
