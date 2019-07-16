@@ -3,12 +3,16 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.EffectFilter;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowScreenRender;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 
-public class CameralRenderer implements CustomSurfaceView.Render {
+public class CameralRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private SurfaceCreateCallback mSurfaceCreateCallback;
 
@@ -31,7 +35,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     }
 
     @Override
-    public void onSurfaceCreated() {
+    public void onSurfaceCreated(GL10 gl10, EGLConfig var2) {
         mEffectFilter.onSurfaceCreated();
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
@@ -41,7 +45,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     }
 
     @Override
-    public void onSurfaceChanged(int width, int height) {
+    public void onSurfaceChanged(GL10 gl10, int width, int height) {
         screenWidth = width;
         screenHeight = height;
 
@@ -54,7 +58,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     }
 
     @Override
-    public void onDrawFrame() {
+    public void onDrawFrame(GL10 gl10) {
         GLES20.glViewport(0, 0, screenWidth, screenHeight);
         mEffectFilter.onDrawFrame();
         beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());

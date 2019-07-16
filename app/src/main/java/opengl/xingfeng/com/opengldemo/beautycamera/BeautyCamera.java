@@ -14,6 +14,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -35,11 +36,12 @@ import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
 
 import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
+import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 import static opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.RENDERMODE_CONTINUOUSLY;
 
 public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback {
     private Camera mCamera;
-    private CustomSurfaceView customSurfaceView;
+    private GLSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
     private CameralRenderer render;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -52,16 +54,20 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private HandlerThread mThread;
     private Handler mHandler;
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beauty_camera);
-        customSurfaceView = (CustomSurfaceView) findViewById(R.id.mSurface);
-        customSurfaceView.setRenderMode(RENDERMODE_CONTINUOUSLY);
+        customSurfaceView = (GLSurfaceView) findViewById(R.id.mSurface);
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
 
         render = new CameralRenderer(this);
-        customSurfaceView.setRender(render);
+        customSurfaceView.setEGLContextClientVersion(2);
+        customSurfaceView.setRenderer(render);
+        customSurfaceView.setRenderMode(RENDERMODE_WHEN_DIRTY);
+        customSurfaceView.setPreserveEGLContextOnPause(true);
+
         cameraHelper = new CameraHelper(this);
         mCameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
         mThread = new HandlerThread("camera2 ");
@@ -87,6 +93,12 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        customSurfaceView.onResume();
     }
 
     @Override
