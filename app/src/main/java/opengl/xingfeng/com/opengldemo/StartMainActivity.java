@@ -16,6 +16,9 @@ import opengl.xingfeng.com.opengldemo.firework.FireworkActivity;
 import opengl.xingfeng.com.opengldemo.heightmap.HeightmapActivity;
 import opengl.xingfeng.com.opengldemo.machinestate.StateActivity;
 import opengl.xingfeng.com.opengldemo.particles.ParticlesActivity;
+import opengl.xingfeng.com.opengldemo.proxy.LogHandler;
+import opengl.xingfeng.com.opengldemo.proxy.MyUserManager;
+import opengl.xingfeng.com.opengldemo.proxy.UsermangerImpl;
 import opengl.xingfeng.com.opengldemo.record.RecordMainActivity;
 import opengl.xingfeng.com.opengldemo.texturecompress.CompressedTextureActivity;
 import opengl.xingfeng.com.opengldemo.water.ESWaterActivity;
@@ -50,6 +53,12 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
         mListView.setOnItemClickListener(this);
 
         mLayoutInflator = LayoutInflater.from(this);
+
+
+        LogHandler logHandler=new LogHandler();
+        MyUserManager userManager=(MyUserManager)logHandler.newProxyInstance(new UsermangerImpl());
+        //UserManager userManager=new UserManagerImpl();
+        userManager.addUser("1111", "张三");
     }
 
     @Override
