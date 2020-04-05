@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.BeautyPermissionActivity;
+import opengl.xingfeng.com.opengldemo.camera.CameraPreviewActivity;
 import opengl.xingfeng.com.opengldemo.firework.FireworkActivity;
 import opengl.xingfeng.com.opengldemo.heightmap.HeightmapActivity;
 import opengl.xingfeng.com.opengldemo.machinestate.StateActivity;
@@ -38,7 +39,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
             HeightmapActivity.class,
             CompressedTextureActivity.class,
             StateActivity.class,
-            BeautyPermissionActivity.class
+            BeautyPermissionActivity.class,
+            CameraPreviewActivity.class
     };
 
 
@@ -80,7 +82,8 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
                 "地图效果",
                 "纹理压缩",
                 "状态机示例",
-                "相机美颜"
+                "相机美颜",
+                "相机预览"
         };
 
         @Override

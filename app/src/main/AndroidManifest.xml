@@ -17,7 +17,6 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-     
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
@@ -30,6 +29,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".camera.CameraPreviewActivity"></activity>
         <activity android:name=".MainActivity" />
         <activity android:name=".Coordinate" />
         <activity android:name=".EglDemoActivity" />
@@ -51,7 +51,7 @@
         <activity android:name=".texturecompress.CompressedTextureActivity" />
         <activity android:name=".machinestate.StateActivity" />
         <activity android:name=".beautycamera.BeautyCamera" />
-        <activity android:name=".beautycamera.BeautyPermissionActivity"></activity>
+        <activity android:name=".beautycamera.BeautyPermissionActivity" />
     </application>
 
 </manifest>
