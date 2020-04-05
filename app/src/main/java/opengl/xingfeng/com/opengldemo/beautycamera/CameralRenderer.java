@@ -59,10 +59,10 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        GLES20.glViewport(0, 0, screenWidth, screenHeight);
         mEffectFilter.onDrawFrame();
         beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
         beautyRender.onDrawFrame();
+        GLES20.glViewport(0, 0, screenWidth, screenHeight);
         showScreenRender.setMatrix(SM);
         showScreenRender.setInputTexture(beautyRender.getOnputTextureId());
         showScreenRender.onDrawFrame();
