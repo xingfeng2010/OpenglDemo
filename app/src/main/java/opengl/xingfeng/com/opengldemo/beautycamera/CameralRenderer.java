@@ -10,11 +10,13 @@ import javax.microedition.khronos.opengles.GL10;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.EffectFilter;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowScreenRender;
+import opengl.xingfeng.com.opengldemo.render.FrameRateMeter;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 
 public class CameralRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private SurfaceCreateCallback mSurfaceCreateCallback;
+    private FpsUpdateCallback mFpsUpdateCallback;
 
     private EffectFilter mEffectFilter;
     private BeautyRender beautyRender;
@@ -26,12 +28,16 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
     int previewWidth, previewHeight;
     int screenWidth, screenHeight;
 
+    private FrameRateMeter mFrameRateMeter;
+
     public CameralRenderer(Context context) {
         mContext = context;
 
         mEffectFilter = new EffectFilter(context);
         beautyRender = new BeautyRender(context);
         showScreenRender = new ShowScreenRender(context);
+
+        mFrameRateMeter = new FrameRateMeter();
     }
 
     @Override
@@ -66,6 +72,15 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         showScreenRender.setMatrix(SM);
         showScreenRender.setInputTexture(beautyRender.getOnputTextureId());
         showScreenRender.onDrawFrame();
+
+        updateFps();
+    }
+
+    private void updateFps() {
+        if (mFpsUpdateCallback != null) {
+            mFrameRateMeter.drawFrameCount();
+            mFpsUpdateCallback.fpsUpdate(mFrameRateMeter.getFPS());
+        }
     }
 
 
@@ -106,5 +121,9 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
     public void setPreViewSize(int previewWidth, int previewHeight) {
         this.previewWidth = previewWidth;
         this.previewHeight = previewHeight;
+    }
+
+    public void setFpsUpdateCallback(FpsUpdateCallback callback) {
+        mFpsUpdateCallback = callback;
     }
 }

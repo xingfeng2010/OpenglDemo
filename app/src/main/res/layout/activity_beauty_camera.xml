@@ -26,4 +26,28 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="30dp"
         android:layout_centerHorizontal="true"/>
+
+    <!-- 速度选择条 -->
+    <opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar
+        android:id="@+id/record_speed_bar"
+        android:layout_centerHorizontal="true"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="40dp"
+        android:layout_above="@id/mShutter"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/fps_tv"
+        android:layout_below="@id/mSeek"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/holo_red_light"
+        />
+
+    <include android:id="@+id/camera_setting"
+        layout="@layout/camera_setting_layout" />
 </RelativeLayout>

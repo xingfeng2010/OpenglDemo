@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
@@ -28,18 +29,22 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 import opengl.xingfeng.com.opengldemo.R;
+import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
+import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar;
+import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar.RecordSpeed;
 
 import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 import static opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.RENDERMODE_CONTINUOUSLY;
 
-public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback {
+public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback,FpsUpdateCallback, RecordSpeedLevelBar.OnSpeedChangedListener {
     private Camera mCamera;
     private GLSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
@@ -53,6 +58,14 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private Size mPreviewSize;
     private HandlerThread mThread;
     private Handler mHandler;
+    private TextView mFpsTextView;
+    private RecordSpeedLevelBar mRecordSpeedLevelBar;
+
+    private CameraSettingParam mCameraSettingParam;
+
+    private CameraCaptureSession mCameraCaptureSession;
+
+    private SurfaceTexture mSurfaceTexture;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -61,7 +74,13 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         setContentView(R.layout.activity_beauty_camera);
         customSurfaceView = (GLSurfaceView) findViewById(R.id.mSurface);
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
+        mFpsTextView = (TextView) findViewById(R.id.fps_tv);
+        mRecordSpeedLevelBar = findViewById(R.id.record_speed_bar);
 
+        mRecordSpeedLevelBar.setOnSpeedChangedListener(this);
+
+
+        mCameraSettingParam = new CameraSettingParam();
         render = new CameralRenderer(this);
         customSurfaceView.setEGLContextClientVersion(2);
         customSurfaceView.setRenderer(render);
@@ -76,6 +95,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
         //previewAngle(this);
         render.setSurfaceCreateCallback(this);
+        render.setFpsUpdateCallback(this);
         appCompatSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -103,6 +123,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     @Override
     public void surfaceCreated(SurfaceTexture surfaceTexture) {
+        mSurfaceTexture = surfaceTexture;
         //openCamera(surfaceTexture);
         openCamera2(surfaceTexture);
     }
@@ -133,6 +154,17 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     }
 
     public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.camera_switch:
+                cameraId = cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT ?
+                        Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT;
+                openCamera2(mSurfaceTexture);
+                break;
+            case R.id.speed_switch:
+                int visibility = mRecordSpeedLevelBar.getVisibility();
+                mRecordSpeedLevelBar.setVisibility(visibility == View.GONE ? View.VISIBLE: View.GONE);
+                break;
+        }
     }
 
     public void previewAngle(Context context) {
@@ -182,10 +214,8 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void openCamera2(final SurfaceTexture surfaceTexture) {
         try {
-            if (mDevice != null) {
-                mDevice.close();
-                mDevice = null;
-            }
+            closeCamera2();
+
             CameraCharacteristics c = mCameraManager.getCameraCharacteristics(cameraId + "");
             StreamConfigurationMap map = c.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             Size[] sizes = map.getOutputSizes(SurfaceHolder.class);
@@ -207,6 +237,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                                 CameraCaptureSession.StateCallback() {
                                     @Override
                                     public void onConfigured(CameraCaptureSession session) {
+                                        mCameraCaptureSession = session;
                                         try {
                                             session.setRepeatingRequest(builder.build(), new CameraCaptureSession.CaptureCallback() {
                                                 @Override
@@ -250,4 +281,31 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         }
     }
 
+    @Override
+    public void fpsUpdate(float fps) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mFpsTextView.setText("FPS: " + fps);
+            }
+        });
+    }
+
+    @Override
+    public void onSpeedChanged(RecordSpeed speed) {
+        mCameraSettingParam.setSpeed(speed);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void closeCamera2() {
+        if (mDevice != null) {
+            mDevice.close();
+            mDevice = null;
+        }
+
+        if (mCameraCaptureSession != null) {
+            mCameraCaptureSession.close();
+            mCameraCaptureSession = null;
+        }
+    }
 }
