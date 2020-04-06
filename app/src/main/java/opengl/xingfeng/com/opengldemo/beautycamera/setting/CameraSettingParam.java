@@ -10,6 +10,9 @@ public class CameraSettingParam {
     //拍照、拍60秒、拍15秒、影集
     private String recodeType;
 
+    //正在拍照
+    private boolean takePicture;
+
     public RecordSpeed getSpeed() {
         return speed;
     }
@@ -24,5 +27,13 @@ public class CameraSettingParam {
 
     public void setRecodeType(String recodeType) {
         this.recodeType = recodeType;
+    }
+
+    public boolean isTakePicture() {
+        return takePicture;
+    }
+
+    public void setTakePicture(boolean takePicture) {
+        this.takePicture = takePicture;
     }
 }

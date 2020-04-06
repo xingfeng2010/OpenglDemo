@@ -3,11 +3,15 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
+
+import java.nio.ByteBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.EffectFilter;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowScreenRender;
 import opengl.xingfeng.com.opengldemo.render.FrameRateMeter;
@@ -17,6 +21,7 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private SurfaceCreateCallback mSurfaceCreateCallback;
     private FpsUpdateCallback mFpsUpdateCallback;
+    private TakePictureCallback mTakePictureCallback;
 
     private EffectFilter mEffectFilter;
     private BeautyRender beautyRender;
@@ -29,8 +34,9 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
     int screenWidth, screenHeight;
 
     private FrameRateMeter mFrameRateMeter;
+    private CameraSettingParam mCameraSettingParam;
 
-    public CameralRenderer(Context context) {
+    public CameralRenderer(Context context, CameraSettingParam cameraSettingParam) {
         mContext = context;
 
         mEffectFilter = new EffectFilter(context);
@@ -38,6 +44,8 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         showScreenRender = new ShowScreenRender(context);
 
         mFrameRateMeter = new FrameRateMeter();
+
+        mCameraSettingParam = cameraSettingParam;
     }
 
     @Override
@@ -72,6 +80,18 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         showScreenRender.setMatrix(SM);
         showScreenRender.setInputTexture(beautyRender.getOnputTextureId());
         showScreenRender.onDrawFrame();
+
+        if (mCameraSettingParam.isTakePicture()) {
+            ByteBuffer buffer = ByteBuffer.allocateDirect(screenWidth * screenHeight * 4);
+
+            GLES20.glReadPixels(0, 0, screenWidth, screenHeight, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buffer);
+            buffer.rewind();
+            mCameraSettingParam.setTakePicture(false);
+
+            if (mTakePictureCallback != null) {
+                mTakePictureCallback.onTakePicture(buffer, screenWidth, screenHeight);
+            }
+        }
 
         updateFps();
     }
@@ -125,5 +145,9 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
 
     public void setFpsUpdateCallback(FpsUpdateCallback callback) {
         mFpsUpdateCallback = callback;
+    }
+
+    public void setTakePictureCallback(TakePictureCallback callback) {
+        mTakePictureCallback = callback;
     }
 }

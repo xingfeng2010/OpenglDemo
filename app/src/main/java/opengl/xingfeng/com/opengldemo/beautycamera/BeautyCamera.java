@@ -3,6 +3,7 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -16,6 +17,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -30,21 +32,26 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
+import opengl.xingfeng.com.opengldemo.util.BitmapUtils;
 import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar;
 import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar.RecordSpeed;
 
 import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
-import static opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.RENDERMODE_CONTINUOUSLY;
 
-public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback,FpsUpdateCallback, RecordSpeedLevelBar.OnSpeedChangedListener {
+public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback,FpsUpdateCallback, RecordSpeedLevelBar.OnSpeedChangedListener,TakePictureCallback {
     private Camera mCamera;
     private GLSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
@@ -81,7 +88,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
 
         mCameraSettingParam = new CameraSettingParam();
-        render = new CameralRenderer(this);
+        render = new CameralRenderer(this, mCameraSettingParam);
         customSurfaceView.setEGLContextClientVersion(2);
         customSurfaceView.setRenderer(render);
         customSurfaceView.setRenderMode(RENDERMODE_WHEN_DIRTY);
@@ -96,6 +103,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         //previewAngle(this);
         render.setSurfaceCreateCallback(this);
         render.setFpsUpdateCallback(this);
+        render.setTakePictureCallback(this);
         appCompatSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -163,6 +171,9 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
             case R.id.speed_switch:
                 int visibility = mRecordSpeedLevelBar.getVisibility();
                 mRecordSpeedLevelBar.setVisibility(visibility == View.GONE ? View.VISIBLE: View.GONE);
+                break;
+            case R.id.mShutter:
+                mCameraSettingParam.setTakePicture(true);
                 break;
         }
     }
@@ -307,5 +318,59 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
             mCameraCaptureSession.close();
             mCameraCaptureSession = null;
         }
+    }
+
+    @Override
+    public void onTakePicture(final ByteBuffer buffer, final int width, final int height) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap bitmap=Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+                bitmap.copyPixelsFromBuffer(buffer);
+                bitmap = BitmapUtils.rotateBitmap(bitmap, 180, true);
+                bitmap = BitmapUtils.flipBitmap(bitmap, true);
+                saveBitmap(bitmap);
+                bitmap.recycle();
+            }
+        }).start();
+    }
+
+
+    protected String getSD(){
+        return Environment.getExternalStorageDirectory().getAbsolutePath();
+    }
+
+    //图片保存
+    public void saveBitmap(Bitmap b){
+        String path =  getSD()+ "/OpenGLDemo/photo/";
+        File folder=new File(path);
+        if(!folder.exists()&&!folder.mkdirs()){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(BeautyCamera.this, "无法保存照片", Toast.LENGTH_SHORT).show();
+                }
+            });
+            return;
+        }
+        long dataTake = System.currentTimeMillis();
+        final String jpegName=path+ dataTake +".jpg";
+        try {
+            FileOutputStream fout = new FileOutputStream(jpegName);
+            BufferedOutputStream bos = new BufferedOutputStream(fout);
+            b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            bos.flush();
+            bos.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BeautyCamera.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 }
