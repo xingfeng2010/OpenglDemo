@@ -3,7 +3,6 @@ package opengl.xingfeng.com.opengldemo.beautycamera.showfbo;
 import android.content.Context;
 import android.opengl.GLES20;
 
-import java.util.regex.Matcher;
 
 import opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
@@ -13,6 +12,8 @@ public class ShowScreenRender implements CustomSurfaceView.Render{
     private Context mContext;
     private int inputTexture;
     private ShowScreenProgram showScreenProgram;
+
+    int width, height;
 
     private float[] matrix = MatrixUtils.getOriginalMatrix();
 
@@ -33,6 +34,9 @@ public class ShowScreenRender implements CustomSurfaceView.Render{
     public void onSurfaceChanged(int width, int height) {
         //宽高
         GLES20.glViewport(0, 0, width, height);
+
+        this.width = width;
+        this.height = height;
     }
 
     @Override

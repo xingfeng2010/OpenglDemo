@@ -26,6 +26,8 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
     private EffectFilter mEffectFilter;
     private BeautyRender beautyRender;
     private ShowScreenRender showScreenRender;
+    private CameraWatermaskRender mCameraWatermaskRender;
+    private WaterMarkRenderDrawer mWaterMarkRenderDrawer;
 
     private float[] SM = new float[16];                           //用于绘制到屏幕上的变换矩阵
     private int mShowType = MatrixUtils.TYPE_CENTERCROP;          //输出到屏幕上的方式
@@ -42,6 +44,8 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         mEffectFilter = new EffectFilter(context);
         beautyRender = new BeautyRender(context);
         showScreenRender = new ShowScreenRender(context);
+        mCameraWatermaskRender = new CameraWatermaskRender(context);
+        mWaterMarkRenderDrawer = new WaterMarkRenderDrawer(context);
 
         mFrameRateMeter = new FrameRateMeter();
 
@@ -53,6 +57,8 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         mEffectFilter.onSurfaceCreated();
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
+        mCameraWatermaskRender.onSurfaceCreated();
+        mWaterMarkRenderDrawer.onCreated();
         if (mSurfaceCreateCallback != null) {
             mSurfaceCreateCallback.surfaceCreated(mEffectFilter.getSurfaceTexture());
         }
@@ -69,6 +75,8 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         mEffectFilter.onSurfaceChanged(previewWidth, previewHeight);
         beautyRender.onSurfaceChanged(previewWidth, previewHeight);
         showScreenRender.onSurfaceChanged(previewWidth, previewHeight);
+        mCameraWatermaskRender.onSurfaceChanged(previewWidth,previewHeight);
+        mWaterMarkRenderDrawer.onChanged(previewWidth,previewHeight);
     }
 
     @Override
@@ -76,9 +84,17 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         mEffectFilter.onDrawFrame();
         beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
         beautyRender.onDrawFrame();
+
+
+        mCameraWatermaskRender.setInputTexture(beautyRender.getOnputTextureId());
+        mCameraWatermaskRender.onDrawFrame();
+
+//        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
+//        mWaterMarkRenderDrawer.draw();
+
         GLES20.glViewport(0, 0, screenWidth, screenHeight);
         showScreenRender.setMatrix(SM);
-        showScreenRender.setInputTexture(beautyRender.getOnputTextureId());
+        showScreenRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
         showScreenRender.onDrawFrame();
 
         if (mCameraSettingParam.isTakePicture()) {

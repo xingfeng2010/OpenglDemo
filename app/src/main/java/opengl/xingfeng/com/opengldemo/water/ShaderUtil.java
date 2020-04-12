@@ -8,7 +8,7 @@ import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
 
-class ShaderUtil {
+public class ShaderUtil {
     /**
      * 根据文字创建图片
      */
