@@ -94,11 +94,11 @@ public class WaterRender implements GLSurfaceView.Renderer{
 
         if (program > 0) {
             //获取顶点坐标字段
-            avPosition = GLES20.glGetAttribLocation(program, "av_Position");
+            avPosition = GLES20.glGetAttribLocation(program, "aPosition");
             //获取纹理坐标字段
-            afPosition = GLES20.glGetAttribLocation(program, "af_Position");
+            afPosition = GLES20.glGetAttribLocation(program, "aTextureCoord");
             //获取纹理字段
-            texture = GLES20.glGetUniformLocation(program, "sTexture");
+            texture = GLES20.glGetUniformLocation(program, "uTexture");
 
             //创建vbo
             createVBO();
@@ -191,11 +191,11 @@ public class WaterRender implements GLSurfaceView.Renderer{
 
 
     private void initWater() {
-        //bitmap = ShaderUtil.createTextImage("我是水印", 40, "#fff000", "#00000000", 0);
+        bitmap = ShaderUtil.createTextImage("我是水印", 40, "#fff000", "#00000000", 0);
 
         //设置位置 根据需求自己配置
-       // float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
-        float r = 1.0f;
+        float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
+        //float r = 1.0f;
         float w = r * 0.1f;
         vertexData[12] = 0.8f - w;
         vertexData[13] = -0.8f;
