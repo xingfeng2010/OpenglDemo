@@ -30,10 +30,10 @@ public class CameraWatermaskProgram extends MyShaderProgram {
 
     //纹理坐标  对应顶点坐标  与之映射
     static float textureData[] = {   // in counterclockwise order:
-            0f, 0f, 0.0f, // bottom left
             0f, 1f, 0.0f, // bottom right
-            1f, 0f, 0.0f, // top left
+            0f, 0f, 0.0f, // bottom left
             1f, 1f, 0.0f,  // top right
+            1f, 0f, 0.0f, // top left
     };
 
     private FloatBuffer mVertexBuffer;
