@@ -17,10 +17,10 @@ public class CameraWatermaskProgram extends MyShaderProgram {
 
     //顶点坐标
     static float vertexData[] = {   // in counterclockwise order:
-            -1f, 1f, 0.0f, // bottom left
-            -1f, -1f, 0.0f, // bottom right
-            1f, 1f, 0.0f, // top left
-            1f, -1f, 0.0f,  // top right
+            -1f, -1f, 0.0f,
+            -1f, 1f, 0.0f,
+            1f, -1f, 0.0f,
+            1f, 1f, 0.0f,
 
             0f, 0f, 0f,//水印预留位置
             0f, 0f, 0f,
@@ -30,10 +30,10 @@ public class CameraWatermaskProgram extends MyShaderProgram {
 
     //纹理坐标  对应顶点坐标  与之映射
     static float textureData[] = {   // in counterclockwise order:
-            0f, 1f, 0.0f, // bottom right
-            0f, 0f, 0.0f, // bottom left
-            1f, 1f, 0.0f,  // top right
-            1f, 0f, 0.0f, // top left
+            0f, 0f, 0.0f,
+            0f, 1f, 0.0f,
+            1f, 0f, 0.0f,
+            1f, 1f, 0.0f,
     };
 
     private FloatBuffer mVertexBuffer;
@@ -97,26 +97,27 @@ public class CameraWatermaskProgram extends MyShaderProgram {
     }
 
     private void initWaterInfo() {
-        bitmap = ShaderUtil.createTextImage("我是水印", 40, "#fff000", "#00000000", 0);
+        bitmap = ShaderUtil.createTextImage("我是水印", 20, "#fff000", "#00000000", 0);
 
         //设置位置 根据需求自己配置
         float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
         //float r = 1.0f;
         float w = r * 0.1f;
         vertexData[12] = 1.0f - w;
-        vertexData[13] = -1.0f;
+        vertexData[13] = -0.3f;
         vertexData[14] = 0;
 
-        vertexData[15] = 1.0f;
-        vertexData[16] = -1.0f;
+        vertexData[15] = 1.0f - w;
+        vertexData[16] = -0.1f;
         vertexData[17] = 0;
 
-        vertexData[18] = 1.0f - w;
-        vertexData[19] = -0.7f;
+        vertexData[18] = 1.0f;
+        vertexData[19] = -0.3f;
         vertexData[20] = 0;
 
+
         vertexData[21] = 1.0f;
-        vertexData[22] = -0.7f;
+        vertexData[22] = -0.1f;
         vertexData[23] = 0;
     }
 
