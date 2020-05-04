@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -14,10 +15,11 @@ import javax.microedition.khronos.opengles.GL10;
 import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.EffectFilter;
 import opengl.xingfeng.com.opengldemo.beautycamera.showfbo.ShowScreenRender;
+import opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView.Render;
 import opengl.xingfeng.com.opengldemo.render.FrameRateMeter;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 
-public class CameralRenderer implements GLSurfaceView.Renderer {
+public class CameralRenderer implements CustomSurfaceView.Render {
     private Context mContext;
     private SurfaceCreateCallback mSurfaceCreateCallback;
     private FpsUpdateCallback mFpsUpdateCallback;
@@ -37,6 +39,8 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
 
     private FrameRateMeter mFrameRateMeter;
     private CameraSettingParam mCameraSettingParam;
+    // Presenter
+    private final WeakReference<BeautyCamera> mWeakBeautyCamera;
 
     public CameralRenderer(Context context, CameraSettingParam cameraSettingParam) {
         mContext = context;
@@ -50,10 +54,13 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         mFrameRateMeter = new FrameRateMeter();
 
         mCameraSettingParam = cameraSettingParam;
+
+        mWeakBeautyCamera = new WeakReference<>((BeautyCamera)context);
+
     }
 
     @Override
-    public void onSurfaceCreated(GL10 gl10, EGLConfig var2) {
+    public void onSurfaceCreated() {
         mEffectFilter.onSurfaceCreated();
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
@@ -62,10 +69,14 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
         if (mSurfaceCreateCallback != null) {
             mSurfaceCreateCallback.surfaceCreated(mEffectFilter.getSurfaceTexture());
         }
+
+        if (mWeakBeautyCamera.get() != null) {
+            mWeakBeautyCamera.get().onBindSharedContext();
+        }
     }
 
     @Override
-    public void onSurfaceChanged(GL10 gl10, int width, int height) {
+    public void onSurfaceChanged(int width, int height) {
         screenWidth = width;
         screenHeight = height;
 
@@ -80,7 +91,7 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
     }
 
     @Override
-    public void onDrawFrame(GL10 gl10) {
+    public void onDrawFrame() {
         mEffectFilter.onDrawFrame();
         beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
         beautyRender.onDrawFrame();
@@ -91,6 +102,11 @@ public class CameralRenderer implements GLSurfaceView.Renderer {
 
 //        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
 //        mWaterMarkRenderDrawer.draw();
+
+        if(mWeakBeautyCamera.get() != null) {
+            mWeakBeautyCamera.get().onRecordFrameAvailable(mCameraWatermaskRender.getOnputTextureId(),
+                    mEffectFilter.getSurfaceTexture().getTimestamp());
+        }
 
         GLES20.glViewport(0, 0, screenWidth, screenHeight);
         showScreenRender.setMatrix(SM);

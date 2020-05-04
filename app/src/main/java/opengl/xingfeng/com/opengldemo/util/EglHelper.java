@@ -1,53 +1,52 @@
 package opengl.xingfeng.com.opengldemo.util;
 
 import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
 import android.view.Surface;
 
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
-import javax.microedition.khronos.egl.EGLSurface;
+
 
 public class EglHelper {
     private static final String TAG = "EglHelper";
-    private EGL10 mEgl;
-    private EGLDisplay mEglDisplay;
-    private EGLContext mEglContext;
-    private EGLSurface mEglSurface;
+    private EGLDisplay mEGLDisplay;
+    private EGLContext mEGLContext;
+    private EGLSurface mEGLSurface;
 
 
     public void initEgl(Surface surface, EGLContext eglContext) {
         //1. 得到Egl实例
-        mEgl = (EGL10) EGLContext.getEGL();
+        //EGL14 = (EGL14) EGLContext.getEGL();
 
         //2. 得到默认的显示设备（就是窗口）
-        mEglDisplay = mEgl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-        if (mEglDisplay == EGL10.EGL_NO_DISPLAY) {
+        mEGLDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+        if (mEGLDisplay == EGL14.EGL_NO_DISPLAY) {
             throw new RuntimeException("eglGetDisplay failed");
         }
 
         //3. 初始化默认显示设备
         int[] version = new int[2];
-        if (!mEgl.eglInitialize(mEglDisplay, version)) {
+        if (!EGL14.eglInitialize(mEGLDisplay, version,0, version, 1)) {
             throw new RuntimeException("eglInitialize failed");
         }
 
         //4. 设置显示设备的属性
         int[] attrib_list = new int[]{
-                EGL10.EGL_RED_SIZE, mRedSize,
-                EGL10.EGL_GREEN_SIZE, mGreenSize,
-                EGL10.EGL_BLUE_SIZE, mBlueSize,
-                EGL10.EGL_ALPHA_SIZE, mAlphaSize,
-                EGL10.EGL_DEPTH_SIZE, mDepthSize,
-                EGL10.EGL_STENCIL_SIZE, mStencilSize,
-                EGL10.EGL_RENDERABLE_TYPE, mRenderType,//egl版本  2.0
-                EGL10.EGL_NONE};
+                EGL14.EGL_RED_SIZE, mRedSize,
+                EGL14.EGL_GREEN_SIZE, mGreenSize,
+                EGL14.EGL_BLUE_SIZE, mBlueSize,
+                EGL14.EGL_ALPHA_SIZE, mAlphaSize,
+                EGL14.EGL_DEPTH_SIZE, mDepthSize,
+                EGL14.EGL_STENCIL_SIZE, mStencilSize,
+                EGL14.EGL_RENDERABLE_TYPE, mRenderType,//egl版本  2.0
+                EGL14.EGL_NONE};
 
 
         int[] num_config = new int[1];
-        if (!mEgl.eglChooseConfig(mEglDisplay, attrib_list, null, 1,
-                num_config)) {
+        if (!EGL14.eglChooseConfig(mEGLDisplay, attrib_list, 0, null, 0, 1,
+                num_config, 0)) {
             throw new IllegalArgumentException("eglChooseConfig failed");
         }
         int numConfigs = num_config[0];
@@ -58,31 +57,32 @@ public class EglHelper {
 
         //5. 从系统中获取对应属性的配置
         EGLConfig[] configs = new EGLConfig[numConfigs];
-        if (!mEgl.eglChooseConfig(mEglDisplay, attrib_list, configs, numConfigs,
-                num_config)) {
+        if (!EGL14.eglChooseConfig(mEGLDisplay, attrib_list, 0, configs, 0, numConfigs,
+                num_config, 0)) {
             throw new IllegalArgumentException("eglChooseConfig#2 failed");
         }
-        EGLConfig eglConfig = chooseConfig(mEgl, mEglDisplay, configs);
-        if (eglConfig == null) {
-            eglConfig = configs[0];
-        }
+        //EGLConfig eglConfig = chooseConfig(EGL14, mEGLDisplay, configs);
+        EGLConfig eglConfig = configs[0];
 
         //6. 创建EglContext
         int[] contextAttr = new int[]{
                 EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
-                EGL10.EGL_NONE
+                EGL14.EGL_NONE
         };
         if (eglContext == null) {
-            mEglContext =  mEgl.eglCreateContext(mEglDisplay, eglConfig, EGL10.EGL_NO_CONTEXT, contextAttr);
+            mEGLContext =  EGL14.eglCreateContext(mEGLDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, contextAttr, 0);
         } else {
-            mEglContext = mEgl.eglCreateContext(mEglDisplay, eglConfig, eglContext, contextAttr);
+            mEGLContext = EGL14.eglCreateContext(mEGLDisplay, eglConfig, eglContext, contextAttr, 0);
         }
 
         //7. 创建渲染的Surface
-        mEglSurface = mEgl.eglCreateWindowSurface(mEglDisplay, eglConfig, surface, null);
+        int[] surfaceAttribs = {
+                EGL14.EGL_NONE
+        };
+        mEGLSurface = EGL14.eglCreateWindowSurface(mEGLDisplay, eglConfig, surface, surfaceAttribs, 0);
 
         //8. 绑定EglContext和Surface到显示设备中
-        if (!mEgl.eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext)) {
+        if (!EGL14.eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext)) {
             throw new RuntimeException("eglMakeCurrent fail");
         }
     }
@@ -90,45 +90,36 @@ public class EglHelper {
 
     //9. 刷新数据，显示渲染场景
     public boolean swapBuffers() {
-        if (mEgl != null) {
-            return mEgl.eglSwapBuffers(mEglDisplay, mEglSurface);
-        } else {
-            throw new RuntimeException("egl is null");
-        }
+        return EGL14.eglSwapBuffers(mEGLDisplay, mEGLSurface);
     }
 
     public void destoryEgl() {
-        if (mEgl != null) {
-            if (mEglSurface != null && mEglSurface != EGL10.EGL_NO_SURFACE) {
-                mEgl.eglMakeCurrent(mEglDisplay, EGL10.EGL_NO_SURFACE,
-                        EGL10.EGL_NO_SURFACE,
-                        EGL10.EGL_NO_CONTEXT);
+        if (mEGLSurface != null && mEGLSurface != EGL14.EGL_NO_SURFACE) {
+            EGL14.eglMakeCurrent(mEGLDisplay, EGL14.EGL_NO_SURFACE,
+                    EGL14.EGL_NO_SURFACE,
+                    EGL14.EGL_NO_CONTEXT);
 
-                mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
-                mEglSurface = null;
-            }
-
-
-            if (mEglContext != null) {
-                mEgl.eglDestroyContext(mEglDisplay, mEglContext);
-                mEglContext = null;
-            }
-
-
-            if (mEglDisplay != null) {
-                mEgl.eglTerminate(mEglDisplay);
-                mEglDisplay = null;
-            }
-
-            mEgl = null;
+            EGL14.eglDestroySurface(mEGLDisplay, mEGLSurface);
+            mEGLSurface = null;
         }
 
+
+        if (mEGLContext != null) {
+            EGL14.eglDestroyContext(mEGLDisplay, mEGLContext);
+            mEGLContext = null;
+        }
+
+
+        if (mEGLDisplay != null) {
+            EGL14.eglTerminate(mEGLDisplay);
+            mEGLDisplay = null;
+        }
 
     }
 
 
     public EGLContext getEglContext() {
-        return mEglContext;
+        return mEGLContext;
     }
 
     private final int mRedSize = 8;
@@ -139,22 +130,22 @@ public class EglHelper {
     private final int mStencilSize = 8;
     private final int mRenderType = 4;
 
-    private EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
+    private EGLConfig chooseConfig(EGL14 egl, EGLDisplay display,
                                    EGLConfig[] configs) {
         for (EGLConfig config : configs) {
             int d = findConfigAttrib(egl, display, config,
-                    EGL10.EGL_DEPTH_SIZE, 0);
+                    EGL14.EGL_DEPTH_SIZE, 0);
             int s = findConfigAttrib(egl, display, config,
-                    EGL10.EGL_STENCIL_SIZE, 0);
+                    EGL14.EGL_STENCIL_SIZE, 0);
             if ((d >= mDepthSize) && (s >= mStencilSize)) {
                 int r = findConfigAttrib(egl, display, config,
-                        EGL10.EGL_RED_SIZE, 0);
+                        EGL14.EGL_RED_SIZE, 0);
                 int g = findConfigAttrib(egl, display, config,
-                        EGL10.EGL_GREEN_SIZE, 0);
+                        EGL14.EGL_GREEN_SIZE, 0);
                 int b = findConfigAttrib(egl, display, config,
-                        EGL10.EGL_BLUE_SIZE, 0);
+                        EGL14.EGL_BLUE_SIZE, 0);
                 int a = findConfigAttrib(egl, display, config,
-                        EGL10.EGL_ALPHA_SIZE, 0);
+                        EGL14.EGL_ALPHA_SIZE, 0);
                 if ((r == mRedSize) && (g == mGreenSize)
                         && (b == mBlueSize) && (a == mAlphaSize)) {
                     return config;
@@ -164,10 +155,10 @@ public class EglHelper {
         return null;
     }
 
-    private int findConfigAttrib(EGL10 egl, EGLDisplay display,
+    private int findConfigAttrib(EGL14 egl, EGLDisplay display,
                                  EGLConfig config, int attribute, int defaultValue) {
         int[] value = new int[1];
-        if (egl.eglGetConfigAttrib(display, config, attribute, value)) {
+        if (EGL14.eglGetConfigAttrib(display, config, attribute, value, 0)) {
             return value[0];
         }
         return defaultValue;

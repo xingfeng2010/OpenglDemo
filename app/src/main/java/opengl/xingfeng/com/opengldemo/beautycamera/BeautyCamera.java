@@ -15,6 +15,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Environment;
@@ -25,6 +26,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -44,16 +46,24 @@ import java.util.Arrays;
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
+import opengl.xingfeng.com.opengldemo.recorder.AudioParams;
+import opengl.xingfeng.com.opengldemo.recorder.HWMediaRecorder;
+import opengl.xingfeng.com.opengldemo.recorder.OnRecordStateListener;
+import opengl.xingfeng.com.opengldemo.recorder.RecordInfo;
+import opengl.xingfeng.com.opengldemo.recorder.SpeedMode;
+import opengl.xingfeng.com.opengldemo.recorder.VideoParams;
 import opengl.xingfeng.com.opengldemo.util.BitmapUtils;
+import opengl.xingfeng.com.opengldemo.util.PathConstraints;
 import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar;
 import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar.RecordSpeed;
 
 import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 
-public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback,FpsUpdateCallback, RecordSpeedLevelBar.OnSpeedChangedListener,TakePictureCallback {
+public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback,FpsUpdateCallback,
+        RecordSpeedLevelBar.OnSpeedChangedListener,TakePictureCallback, OnRecordStateListener {
     private Camera mCamera;
-    private GLSurfaceView customSurfaceView;
+    private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
     private CameralRenderer render;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -74,25 +84,46 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     private SurfaceTexture mSurfaceTexture;
 
+    // 音视频参数
+    private VideoParams mVideoParams;
+    private AudioParams mAudioParams;
+    private HWMediaRecorder mHWMediaRecorder;
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beauty_camera);
-        customSurfaceView = (GLSurfaceView) findViewById(R.id.mSurface);
+        customSurfaceView = (CustomSurfaceView) findViewById(R.id.mSurface);
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
         mFpsTextView = (TextView) findViewById(R.id.fps_tv);
         mRecordSpeedLevelBar = findViewById(R.id.record_speed_bar);
+        customSurfaceView.getContext();
 
         mRecordSpeedLevelBar.setOnSpeedChangedListener(this);
 
 
         mCameraSettingParam = new CameraSettingParam();
         render = new CameralRenderer(this, mCameraSettingParam);
-        customSurfaceView.setEGLContextClientVersion(2);
-        customSurfaceView.setRenderer(render);
+        //customSurfaceView.setEGLContextClientVersion(2);
+        customSurfaceView.setRender(render);
         customSurfaceView.setRenderMode(RENDERMODE_WHEN_DIRTY);
-        customSurfaceView.setPreserveEGLContextOnPause(true);
+        //customSurfaceView.setPreserveEGLContextOnPause(true);
+
+        // 视频录制器
+        mVideoParams = new VideoParams();
+        mAudioParams = new AudioParams();
+        mHWMediaRecorder = new HWMediaRecorder(this);
+        mVideoParams.setVideoPath(PathConstraints.getVideoTempPath(this));
+        mAudioParams.setAudioPath(PathConstraints.getVideoTempPath(this));
+
+        Log.i("DEBUG_TEST","video path:" + PathConstraints.getVideoTempPath(this));
+
+        mVideoParams.setMaxDuration(5 * 1000 * 1000);
+        mAudioParams.setMaxDuration(5 * 1000 * 1000);
+
+        mVideoParams.setSpeedMode(SpeedMode.MODE_NORMAL);
+        mAudioParams.setSpeedMode(SpeedMode.MODE_NORMAL);
 
         cameraHelper = new CameraHelper(this);
         mCameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
@@ -126,7 +157,16 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     protected void onResume() {
         super.onResume();
-        customSurfaceView.onResume();
+        //customSurfaceView.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mHWMediaRecorder != null) {
+            mHWMediaRecorder.release();
+            mHWMediaRecorder = null;
+        }
     }
 
     @Override
@@ -173,7 +213,8 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                 mRecordSpeedLevelBar.setVisibility(visibility == View.GONE ? View.VISIBLE: View.GONE);
                 break;
             case R.id.mShutter:
-                mCameraSettingParam.setTakePicture(true);
+                //mCameraSettingParam.setTakePicture(true);
+                mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
                 break;
         }
     }
@@ -233,6 +274,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
             //自定义规则，选个大小
             mPreviewSize = sizes[0];
             // mController.setDataSize(mPreviewSize.getHeight(),mPreviewSize.getWidth());
+            mVideoParams.setVideoSize(mPreviewSize.getHeight(), mPreviewSize.getWidth());
             render.setPreViewSize(mPreviewSize.getHeight(), mPreviewSize.getWidth());
             mCameraManager.openCamera(cameraId + "", new CameraDevice.StateCallback() {
                 @Override
@@ -371,6 +413,30 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                 Toast.makeText(BeautyCamera.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
             }
         });
+
+    }
+
+    public void onBindSharedContext() {
+        mVideoParams.setEglContext(customSurfaceView.getEglContext());
+    }
+
+
+    public void onRecordFrameAvailable(int texture, long timestamp) {
+         mHWMediaRecorder.frameAvailable(texture, timestamp);
+    }
+
+    @Override
+    public void onRecordStart() {
+
+    }
+
+    @Override
+    public void onRecording(long duration) {
+
+    }
+
+    @Override
+    public void onRecordFinish(RecordInfo info) {
 
     }
 }

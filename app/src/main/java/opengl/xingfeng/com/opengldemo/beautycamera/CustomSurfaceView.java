@@ -1,6 +1,7 @@
 package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
+import android.opengl.EGLContext;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
@@ -9,7 +10,6 @@ import android.view.SurfaceView;
 
 import java.lang.ref.WeakReference;
 
-import javax.microedition.khronos.egl.EGLContext;
 
 import opengl.xingfeng.com.opengldemo.util.EglHelper;
 

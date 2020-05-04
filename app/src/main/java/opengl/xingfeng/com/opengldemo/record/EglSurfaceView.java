@@ -1,6 +1,7 @@
 package opengl.xingfeng.com.opengldemo.record;
 
 import android.content.Context;
+import android.opengl.EGLContext;
 import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -8,7 +9,6 @@ import android.view.SurfaceView;
 
 import java.lang.ref.WeakReference;
 
-import javax.microedition.khronos.egl.EGLContext;
 
 import opengl.xingfeng.com.opengldemo.util.EglHelper;
 

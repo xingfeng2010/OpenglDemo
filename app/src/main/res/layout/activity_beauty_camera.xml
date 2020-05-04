@@ -6,7 +6,7 @@
     <FrameLayout android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/beauty">
-        <android.opengl.GLSurfaceView
+        <opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/mSurface" />

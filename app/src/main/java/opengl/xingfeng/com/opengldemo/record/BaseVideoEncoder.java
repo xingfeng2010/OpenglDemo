@@ -6,6 +6,7 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.opengl.EGLContext;
 import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
-import javax.microedition.khronos.egl.EGLContext;
 
 import opengl.xingfeng.com.opengldemo.util.EglHelper;
 import opengl.xingfeng.com.opengldemo.util.PermissionUtil;

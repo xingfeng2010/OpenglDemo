@@ -28,7 +28,6 @@ public class ShowScreenProgram  extends MyShaderProgram{
             1.0f, 1.0f,
     };
 
-
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
 
