@@ -3,7 +3,6 @@ package opengl.xingfeng.com.opengldemo.recorder;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -27,7 +26,7 @@ public class AudioEncoder {
 
     private MediaFormat mMediaFormat;
     private MediaCodec mMediaCodec;
-    private MediaMuxer mMediaMuxer;
+    private MediaMuxerWrapper mMediaMuxer;
     private ByteBuffer[] mInputBuffers;
     private ByteBuffer[] mOutputBuffers;
     private MediaCodec.BufferInfo mBufferInfo;
@@ -38,10 +37,11 @@ public class AudioEncoder {
     private long mPresentationTimeUs;   // 编码的时长
     private int mBufferSize = BUFFER_SIZE;
 
-    public AudioEncoder(int bitrate, int sampleRate, int channelCount) {
+    public AudioEncoder(int bitrate, int sampleRate, int channelCount, MediaMuxerWrapper mediaMuxer) {
         mBitrate = bitrate;
         mSampleRate = sampleRate;
         mChannelCount = channelCount;
+        mMediaMuxer = mediaMuxer;
     }
 
     /**
@@ -82,7 +82,7 @@ public class AudioEncoder {
 
         mBufferInfo = new MediaCodec.BufferInfo();
 
-        mMediaMuxer = new MediaMuxer(mOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        //mMediaMuxer = new MediaMuxer(mOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
         mTotalBytesRead = 0;
         mPresentationTimeUs = 0;
     }
@@ -99,7 +99,7 @@ public class AudioEncoder {
             }
             if (mMediaMuxer != null) {
                 mMediaMuxer.stop();
-                mMediaMuxer.release();
+                //mMediaMuxer.release();
                 mMediaMuxer = null;
             }
 
@@ -147,7 +147,18 @@ public class AudioEncoder {
             } else if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 mMediaFormat = mMediaCodec.getOutputFormat();
                 mAudioTrackId = mMediaMuxer.addTrack(mMediaFormat);
-                mMediaMuxer.start();
+
+                if (!mMediaMuxer.start()) {
+                    // we should wait until muxer is ready
+                    synchronized (mMediaMuxer) {
+                        while (!mMediaMuxer.isStarted())
+                            try {
+                                mMediaMuxer.wait(100);
+                            } catch (final InterruptedException e) {
+                            }
+                    }
+                }
+                //mMediaMuxer.start();
             }
         }
     }

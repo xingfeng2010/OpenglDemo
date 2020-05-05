@@ -1,6 +1,7 @@
 package opengl.xingfeng.com.opengldemo.recorder;
 
 import android.media.AudioFormat;
+import android.media.MediaMuxer;
 
 /**
  * 音频参数
@@ -25,6 +26,8 @@ public class AudioParams {
     SpeedMode mSpeedMode;       // 速度模式
     private String mAudioPath;  // 文件名
     private long mMaxDuration;  // 最大时长
+
+    private MediaMuxerWrapper mMediaMuxer;
 
     public AudioParams() {
         mSampleRate = SAMPLE_RATE;
@@ -88,6 +91,14 @@ public class AudioParams {
 
     public long getMaxDuration() {
         return mMaxDuration;
+    }
+
+    public void setMediaMuxer(MediaMuxerWrapper mediaMuxer) {
+        mMediaMuxer = mediaMuxer;
+    }
+
+    public MediaMuxerWrapper getMediaMuxer() {
+        return this.mMediaMuxer;
     }
 
 }

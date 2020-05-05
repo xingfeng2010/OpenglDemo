@@ -1,5 +1,6 @@
 package opengl.xingfeng.com.opengldemo.recorder;
 
+import android.media.MediaMuxer;
 import android.opengl.EGLContext;
 
 /**
@@ -39,6 +40,8 @@ public class VideoParams {
     private SpeedMode mSpeedMode;
     private long mMaxDuration; // us
     private EGLContext mEglContext;
+
+    private MediaMuxerWrapper mMediaMuxer;
 
     public VideoParams() {
         mBitRate = BIT_RATE;
@@ -121,5 +124,13 @@ public class VideoParams {
 
     public EGLContext getEglContext() {
         return mEglContext;
+    }
+
+    public void setMediaMuxer(MediaMuxerWrapper mediaMuxer) {
+        mMediaMuxer = mediaMuxer;
+    }
+
+    public MediaMuxerWrapper getMediaMuxer() {
+        return this.mMediaMuxer;
     }
 }

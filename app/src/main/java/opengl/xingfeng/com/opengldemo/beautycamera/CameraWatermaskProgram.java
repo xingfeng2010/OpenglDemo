@@ -17,10 +17,10 @@ public class CameraWatermaskProgram extends MyShaderProgram {
 
     //顶点坐标
     static float vertexData[] = {   // in counterclockwise order:
-            -1f, -1f, 0.0f,
             -1f, 1f, 0.0f,
-            1f, -1f, 0.0f,
+            -1f, -1f, 0.0f,
             1f, 1f, 0.0f,
+            1f, -1f, 0.0f,
 
             0f, 0f, 0f,//水印预留位置
             0f, 0f, 0f,
@@ -104,20 +104,21 @@ public class CameraWatermaskProgram extends MyShaderProgram {
         //float r = 1.0f;
         float w = r * 0.1f;
         vertexData[12] = 1.0f - w;
-        vertexData[13] = -0.3f;
+        vertexData[13] = -0.1f;
         vertexData[14] = 0;
 
         vertexData[15] = 1.0f - w;
-        vertexData[16] = -0.1f;
+        vertexData[16] = -0.3f;
         vertexData[17] = 0;
 
+
+
         vertexData[18] = 1.0f;
-        vertexData[19] = -0.3f;
+        vertexData[19] = -0.1f;
         vertexData[20] = 0;
 
-
         vertexData[21] = 1.0f;
-        vertexData[22] = -0.1f;
+        vertexData[22] = -0.3f;
         vertexData[23] = 0;
     }
 

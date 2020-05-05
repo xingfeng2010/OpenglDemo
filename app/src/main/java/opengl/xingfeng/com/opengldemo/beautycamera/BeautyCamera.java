@@ -15,6 +15,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.MediaMuxer;
 import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
@@ -48,6 +49,7 @@ import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
 import opengl.xingfeng.com.opengldemo.recorder.AudioParams;
 import opengl.xingfeng.com.opengldemo.recorder.HWMediaRecorder;
+import opengl.xingfeng.com.opengldemo.recorder.MediaMuxerWrapper;
 import opengl.xingfeng.com.opengldemo.recorder.OnRecordStateListener;
 import opengl.xingfeng.com.opengldemo.recorder.RecordInfo;
 import opengl.xingfeng.com.opengldemo.recorder.SpeedMode;
@@ -114,6 +116,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         mVideoParams = new VideoParams();
         mAudioParams = new AudioParams();
         mHWMediaRecorder = new HWMediaRecorder(this);
+        mHWMediaRecorder.setEnableAudio(true);
         mVideoParams.setVideoPath(PathConstraints.getVideoTempPath(this));
         mAudioParams.setAudioPath(PathConstraints.getVideoTempPath(this));
 
@@ -214,6 +217,12 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                 break;
             case R.id.mShutter:
                 //mCameraSettingParam.setTakePicture(true);
+                MediaMuxerWrapper mediaMuxer = null;
+                mediaMuxer = new MediaMuxerWrapper(mVideoParams.getVideoPath());
+                mVideoParams.setMediaMuxer(mediaMuxer);
+                mAudioParams.setMediaMuxer(mediaMuxer);
+                mediaMuxer.addEncoder();
+                mediaMuxer.addEncoder();
                 mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
                 break;
         }

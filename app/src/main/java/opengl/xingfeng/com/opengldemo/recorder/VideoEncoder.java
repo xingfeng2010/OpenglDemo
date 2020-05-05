@@ -3,7 +3,6 @@ package opengl.xingfeng.com.opengldemo.recorder;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
@@ -23,7 +22,7 @@ final class VideoEncoder {
     private static final boolean VERBOSE = true;
 
     private Surface mInputSurface;
-    private MediaMuxer mMediaMuxer;
+    private MediaMuxerWrapper mMediaMuxer;
     private MediaCodec mMediaCodec;
     private MediaCodec.BufferInfo mBufferInfo;
     private int mTrackIndex;
@@ -90,7 +89,8 @@ final class VideoEncoder {
         mMediaCodec.start();
 
         // 创建复用器
-        mMediaMuxer = new MediaMuxer(params.getVideoPath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        //mMediaMuxer = new MediaMuxer(params.getVideoPath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        mMediaMuxer = params.getMediaMuxer();
         mTrackIndex = -1;
         mMuxerStarted = false;
     }
@@ -118,7 +118,7 @@ final class VideoEncoder {
             if (mMuxerStarted) {
                 mMediaMuxer.stop();
             }
-            mMediaMuxer.release();
+            //mMediaMuxer.release();
             mMediaMuxer = null;
         }
     }
@@ -159,7 +159,16 @@ final class VideoEncoder {
                 }
                 // 提取视频轨道并打开复用器
                 mTrackIndex = mMediaMuxer.addTrack(newFormat);
-                mMediaMuxer.start();
+                if (!mMediaMuxer.start()) {
+                    // we should wait until muxer is ready
+                    synchronized (mMediaMuxer) {
+                        while (!mMediaMuxer.isStarted())
+                            try {
+                                mMediaMuxer.wait(100);
+                            } catch (final InterruptedException e) {
+                            }
+                    }
+                }
                 mMuxerStarted = true;
             } else if (encoderStatus < 0) {
                 Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +

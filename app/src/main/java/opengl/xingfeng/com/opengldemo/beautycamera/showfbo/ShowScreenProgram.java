@@ -14,10 +14,10 @@ import opengl.xingfeng.com.opengldemo.util.PermissionUtil;
 public class ShowScreenProgram  extends MyShaderProgram{
     //顶点坐标
     private float vertex[] = {
-            -1.0f,  1.0f,
             -1.0f, -1.0f,
-            1.0f, 1.0f,
+            -1.0f,  1.0f,
             1.0f,  -1.0f,
+            1.0f, 1.0f,
     };
 
     //纹理坐标

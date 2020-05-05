@@ -88,7 +88,7 @@ public final class AudioRecorder implements Runnable {
         int channelCount = (params.getChannel() == AudioFormat.CHANNEL_IN_MONO)? 1 : 2;
 
         // 音频编码器
-        mAudioEncoder = new AudioEncoder(params.getBitRate(), params.getSampleRate(), channelCount);
+        mAudioEncoder = new AudioEncoder(params.getBitRate(), params.getSampleRate(), channelCount, params.getMediaMuxer());
         mAudioEncoder.setBufferSize(mBufferSize);
         mAudioEncoder.setOutputPath(params.getAudioPath());
         mAudioEncoder.prepare();
