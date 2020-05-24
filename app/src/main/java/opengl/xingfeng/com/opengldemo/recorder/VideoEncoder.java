@@ -196,7 +196,16 @@ final class VideoEncoder {
                     if (mLastTimeStamp > 0 && mBufferInfo.presentationTimeUs < mLastTimeStamp) {
                         mBufferInfo.presentationTimeUs = mLastTimeStamp + 10 * 1000;
                     }
+
+                    if (pts == 0) {
+                        pts = mBufferInfo.presentationTimeUs;
+                    }
+
+
                     calculateTimeUs(mBufferInfo);
+
+                    mBufferInfo.presentationTimeUs = mBufferInfo.presentationTimeUs - pts;
+
                     // adjust the ByteBuffer values to match BufferInfo (not needed?)
                     encodedData.position(mBufferInfo.offset);
                     encodedData.limit(mBufferInfo.offset + mBufferInfo.size);
@@ -230,6 +239,8 @@ final class VideoEncoder {
         }
     }
 
+    private long pts;
+
     /**
      * 计算pts
      * @param info
@@ -239,6 +250,7 @@ final class VideoEncoder {
         if (mStartTimeStamp == 0) {
             mStartTimeStamp = info.presentationTimeUs;
         } else {
+            //info.presentationTimeUs = info.presentationTimeUs - mStartTimeStamp;
             mDuration = info.presentationTimeUs - mStartTimeStamp;
         }
     }

@@ -217,13 +217,17 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                 break;
             case R.id.mShutter:
                 //mCameraSettingParam.setTakePicture(true);
-                MediaMuxerWrapper mediaMuxer = null;
-                mediaMuxer = new MediaMuxerWrapper(mVideoParams.getVideoPath());
-                mVideoParams.setMediaMuxer(mediaMuxer);
-                mAudioParams.setMediaMuxer(mediaMuxer);
-                mediaMuxer.addEncoder();
-                mediaMuxer.addEncoder();
-                mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
+                if (!mHWMediaRecorder.isRecording()) {
+                    MediaMuxerWrapper mediaMuxer = null;
+                    mediaMuxer = new MediaMuxerWrapper(mVideoParams.getVideoPath());
+                    mVideoParams.setMediaMuxer(mediaMuxer);
+                    mAudioParams.setMediaMuxer(mediaMuxer);
+                    mediaMuxer.addEncoder();
+                    mediaMuxer.addEncoder();
+                    mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
+                } else {
+                    mHWMediaRecorder.stopRecord();
+                }
                 break;
         }
     }
