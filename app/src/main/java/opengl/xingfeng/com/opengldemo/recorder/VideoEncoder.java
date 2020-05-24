@@ -250,7 +250,6 @@ final class VideoEncoder {
         if (mStartTimeStamp == 0) {
             mStartTimeStamp = info.presentationTimeUs;
         } else {
-            //info.presentationTimeUs = info.presentationTimeUs - mStartTimeStamp;
             mDuration = info.presentationTimeUs - mStartTimeStamp;
         }
     }

@@ -2,6 +2,8 @@ package opengl.xingfeng.com.opengldemo.recorder;
 
 import android.util.Log;
 
+import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar;
+
 /**
  * 媒体录制器，支持倍速录制
  * @author CainHuang

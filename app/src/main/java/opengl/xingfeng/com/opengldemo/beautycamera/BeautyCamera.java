@@ -15,14 +15,10 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.MediaMuxer;
-import android.opengl.EGLContext;
-import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -124,9 +120,6 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
         mVideoParams.setMaxDuration(5 * 1000 * 1000);
         mAudioParams.setMaxDuration(5 * 1000 * 1000);
-
-        mVideoParams.setSpeedMode(SpeedMode.MODE_NORMAL);
-        mAudioParams.setSpeedMode(SpeedMode.MODE_NORMAL);
 
         cameraHelper = new CameraHelper(this);
         mCameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
@@ -360,6 +353,21 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void onSpeedChanged(RecordSpeed speed) {
         mCameraSettingParam.setSpeed(speed);
+        SpeedMode speedMode= SpeedMode.MODE_NORMAL;
+        if (speed == RecordSpeed.SPEED_L0) {
+            speedMode = SpeedMode.MODE_EXTRA_SLOW;
+        } else if (speed == RecordSpeed.SPEED_L1) {
+            speedMode = SpeedMode.MODE_SLOW;
+        } else  if (speed == RecordSpeed.SPEED_L2) {
+            speedMode = SpeedMode.MODE_NORMAL;
+        } else if (speed == RecordSpeed.SPEED_L3) {
+            speedMode = SpeedMode.MODE_FAST;
+        } else if (speed == RecordSpeed.SPEED_L4) {
+            speedMode = SpeedMode.MODE_EXTRA_FAST;
+        }
+
+        mAudioParams.setSpeedMode(speedMode);
+        mVideoParams.setSpeedMode(speedMode);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
