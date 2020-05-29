@@ -290,7 +290,6 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     CaptureRequest.Builder mPreviewBuilder;
 
     ImageReader.OnImageAvailableListener mOnImageAvailableListener = (ImageReader reader) -> {
-        Log.i("DEBUG_TEST", "因为Camera2并没有Camera1的Priview回调");
         Image img = reader.acquireNextImage();
         /**
          *  因为Camera2并没有Camera1的Priview回调！！！

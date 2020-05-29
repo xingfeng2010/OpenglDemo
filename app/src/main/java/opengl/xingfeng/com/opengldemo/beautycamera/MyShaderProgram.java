@@ -2,6 +2,8 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
 
+import java.nio.FloatBuffer;
+
 import opengl.xingfeng.com.opengldemo.util.ShaderHelper;
 import opengl.xingfeng.com.opengldemo.util.TextResourceReader;
 

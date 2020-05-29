@@ -20,6 +20,8 @@ import opengl.xingfeng.com.opengldemo.render.FrameRateMeter;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 
 public class CameralRenderer implements CustomSurfaceView.Render {
+    public static final String TAG = "CameralRenderer";
+
     private Context mContext;
     private SurfaceCreateCallback mSurfaceCreateCallback;
     private FpsUpdateCallback mFpsUpdateCallback;

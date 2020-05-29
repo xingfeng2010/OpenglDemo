@@ -158,4 +158,12 @@ public class ImageFilterProgram extends MyShaderProgram {
     public void setMatrix(float[] matrix) {
         this.matrix = matrix;
     }
+
+    public void reinit(int stickerTexture, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+        this.textureId = stickerTexture;
+        mVertexBuffer = vertexBuffer;
+        mTextureBuffer = textureBuffer;
+
+        createVBO();
+    }
 }
