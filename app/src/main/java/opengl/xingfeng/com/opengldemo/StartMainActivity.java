@@ -10,6 +10,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.cgfay.facedetect.engine.FaceTracker;
+
 import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.beautycamera.BeautyPermissionActivity;
 import opengl.xingfeng.com.opengldemo.camera.CameraPreviewActivity;
@@ -57,10 +59,19 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
         mLayoutInflator = LayoutInflater.from(this);
 
 
+        faceTrackerRequestNetwork();
+
         LogHandler logHandler=new LogHandler();
         MyUserManager userManager=(MyUserManager)logHandler.newProxyInstance(new UsermangerImpl());
         //UserManager userManager=new UserManagerImpl();
         userManager.addUser("1111", "张三");
+    }
+
+    /**
+     * 人脸检测SDK验证，可以替换成自己的SDK
+     */
+    private void faceTrackerRequestNetwork() {
+        new Thread(() -> FaceTracker.requestFaceNetwork(StartMainActivity.this)).start();
     }
 
     @Override
