@@ -1,11 +1,11 @@
 package opengl.xingfeng.com.opengldemo.particles;
 
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.render.TextureRender;
 

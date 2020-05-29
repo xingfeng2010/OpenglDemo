@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -15,14 +16,13 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatSeekBar;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -33,6 +33,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cgfay.facedetect.engine.FaceTracker;
+import com.cgfay.facedetect.listener.FaceTrackerCallback;
+import com.cgfay.landmark.LandmarkEngine;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,6 +44,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatSeekBar;
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
@@ -58,8 +65,8 @@ import opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar.RecordSpeed;
 import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 
-public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback,FpsUpdateCallback,
-        RecordSpeedLevelBar.OnSpeedChangedListener,TakePictureCallback, OnRecordStateListener {
+public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback, FpsUpdateCallback,
+        RecordSpeedLevelBar.OnSpeedChangedListener, TakePictureCallback, OnRecordStateListener, PreviewCallback, FaceTrackerCallback {
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
@@ -86,6 +93,8 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private VideoParams mVideoParams;
     private AudioParams mAudioParams;
     private HWMediaRecorder mHWMediaRecorder;
+
+    private ImageReader mImageReader;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -116,7 +125,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         mVideoParams.setVideoPath(PathConstraints.getVideoTempPath(this));
         mAudioParams.setAudioPath(PathConstraints.getVideoTempPath(this));
 
-        Log.i("DEBUG_TEST","video path:" + PathConstraints.getVideoTempPath(this));
+        Log.i("DEBUG_TEST", "video path:" + PathConstraints.getVideoTempPath(this));
 
         mVideoParams.setMaxDuration(5 * 1000 * 1000);
         mAudioParams.setMaxDuration(5 * 1000 * 1000);
@@ -127,7 +136,6 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         mThread.start();
         mHandler = new Handler(mThread.getLooper());
 
-        //previewAngle(this);
         render.setSurfaceCreateCallback(this);
         render.setFpsUpdateCallback(this);
         render.setTakePictureCallback(this);
@@ -148,6 +156,12 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
             }
         });
+
+        // 初始化检测器
+        FaceTracker.getInstance()
+                .setFaceCallback(this)
+                .previewTrack(true)
+                .initTracker();
     }
 
     @Override
@@ -159,6 +173,11 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void onDestroy() {
         super.onDestroy();
+        // 销毁人脸检测器
+        FaceTracker.getInstance().destroyTracker();
+        // 清理关键点
+        LandmarkEngine.getInstance().clearAll();
+
         if (mHWMediaRecorder != null) {
             mHWMediaRecorder.release();
             mHWMediaRecorder = null;
@@ -168,13 +187,13 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void surfaceCreated(SurfaceTexture surfaceTexture) {
         mSurfaceTexture = surfaceTexture;
-        //openCamera(surfaceTexture);
+//        openCamera(surfaceTexture);
         openCamera2(surfaceTexture);
+//
+//        previewAngle(this);
     }
 
     public void openCamera(SurfaceTexture surfaceTexture) {
-//        cameraHelper.startCamera(surfaceTexture,cameraId);
-//        render.setPreViewSize(cameraHelper.getPreviewWidth(), cameraHelper.getPreviewHeight());
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.release();
@@ -186,11 +205,10 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         try {
             mCamera.setPreviewTexture(surfaceTexture);
             mCamera.startPreview();
-            surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
-                @Override
-                public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                    customSurfaceView.requestRender();
-                }
+            mCamera.setDisplayOrientation(90);
+
+            surfaceTexture.setOnFrameAvailableListener((SurfaceTexture texture) -> {
+                customSurfaceView.requestRender();
             });
         } catch (IOException e) {
             e.printStackTrace();
@@ -206,7 +224,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                 break;
             case R.id.speed_switch:
                 int visibility = mRecordSpeedLevelBar.getVisibility();
-                mRecordSpeedLevelBar.setVisibility(visibility == View.GONE ? View.VISIBLE: View.GONE);
+                mRecordSpeedLevelBar.setVisibility(visibility == View.GONE ? View.VISIBLE : View.GONE);
                 break;
             case R.id.mShutter:
                 //mCameraSettingParam.setTakePicture(true);
@@ -266,8 +284,27 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-       // previewAngle(this);
+        // previewAngle(this);
     }
+
+    CaptureRequest.Builder mPreviewBuilder;
+
+    ImageReader.OnImageAvailableListener mOnImageAvailableListener = (ImageReader reader) -> {
+        Log.i("DEBUG_TEST", "因为Camera2并没有Camera1的Priview回调");
+        Image img = reader.acquireNextImage();
+        /**
+         *  因为Camera2并没有Camera1的Priview回调！！！
+         *  所以该怎么能到预览图像的byte[]呢？
+         *  就是在这里了！！！我找了好久的办法！！！
+         **/
+        ByteBuffer buffer = img.getPlanes()[0].getBuffer();
+        byte[] data = new byte[buffer.remaining()];
+        buffer.get(data);
+        img.close();
+
+        FaceTracker.getInstance()
+                .trackFace(data, mPreviewSize.getWidth(), mPreviewSize.getHeight());
+    };
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void openCamera2(final SurfaceTexture surfaceTexture) {
@@ -288,28 +325,27 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                     mDevice = camera;
                     try {
                         Surface surface = new Surface(surfaceTexture);
-                        final CaptureRequest.Builder builder = mDevice.createCaptureRequest
-                                (TEMPLATE_PREVIEW);
-                        builder.addTarget(surface);
+                        // 设置捕获请求为预览，这里还有拍照啊，录像等
+                        mPreviewBuilder = mDevice.createCaptureRequest(TEMPLATE_PREVIEW);
                         surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
-                        mDevice.createCaptureSession(Arrays.asList(surface), new
+
+
+                        //      就是在这里，通过这个set(key,value)方法，设置曝光啊，自动聚焦等参数！！ 如下举例：
+                        //      mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                        mImageReader = ImageReader.newInstance(customSurfaceView.getWidth(), customSurfaceView.getHeight(), ImageFormat.JPEG, 2);
+                        mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mHandler);
+
+                        // 这里一定分别add两个surface，一个Textureview的，一个ImageReader的，如果没add，会造成没摄像头预览，或者没有ImageReader的那个回调！！
+                        mPreviewBuilder.addTarget(surface);
+                        mPreviewBuilder.addTarget(mImageReader.getSurface());
+
+                        mDevice.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface()), new
                                 CameraCaptureSession.StateCallback() {
                                     @Override
                                     public void onConfigured(CameraCaptureSession session) {
                                         mCameraCaptureSession = session;
                                         try {
-                                            session.setRepeatingRequest(builder.build(), new CameraCaptureSession.CaptureCallback() {
-                                                @Override
-                                                public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request, CaptureResult partialResult) {
-                                                    super.onCaptureProgressed(session, request, partialResult);
-                                                }
-
-                                                @Override
-                                                public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-                                                    super.onCaptureCompleted(session, request, result);
-                                                    customSurfaceView.requestRender();
-                                                }
-                                            }, mHandler);
+                                            updatePreview(session);
                                         } catch (CameraAccessException e) {
                                             e.printStackTrace();
                                         }
@@ -340,25 +376,41 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         }
     }
 
+    /**
+     * 没有这个回调，预揽图像出不来
+     */
+    CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
+        public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request, CaptureResult partialResult) {
+            super.onCaptureProgressed(session, request, partialResult);
+        }
+
+        @Override
+        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+            customSurfaceView.requestRender();
+        }
+    };
+
+    private void updatePreview(CameraCaptureSession session) throws CameraAccessException {
+        session.setRepeatingRequest(mPreviewBuilder.build(), mCaptureCallback, mHandler);
+    }
+
     @Override
     public void fpsUpdate(float fps) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mFpsTextView.setText("FPS: " + fps);
-            }
+        runOnUiThread(() -> {
+            mFpsTextView.setText("FPS: " + fps);
         });
     }
 
     @Override
     public void onSpeedChanged(RecordSpeed speed) {
         mCameraSettingParam.setSpeed(speed);
-        SpeedMode speedMode= SpeedMode.MODE_NORMAL;
+        SpeedMode speedMode = SpeedMode.MODE_NORMAL;
         if (speed == RecordSpeed.SPEED_L0) {
             speedMode = SpeedMode.MODE_EXTRA_SLOW;
         } else if (speed == RecordSpeed.SPEED_L1) {
             speedMode = SpeedMode.MODE_SLOW;
-        } else  if (speed == RecordSpeed.SPEED_L2) {
+        } else if (speed == RecordSpeed.SPEED_L2) {
             speedMode = SpeedMode.MODE_NORMAL;
         } else if (speed == RecordSpeed.SPEED_L3) {
             speedMode = SpeedMode.MODE_FAST;
@@ -385,39 +437,33 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     @Override
     public void onTakePicture(final ByteBuffer buffer, final int width, final int height) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Bitmap bitmap=Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-                bitmap.copyPixelsFromBuffer(buffer);
-                bitmap = BitmapUtils.rotateBitmap(bitmap, 180, true);
-                bitmap = BitmapUtils.flipBitmap(bitmap, true);
-                saveBitmap(bitmap);
-                bitmap.recycle();
-            }
+        new Thread(() -> {
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            bitmap.copyPixelsFromBuffer(buffer);
+            bitmap = BitmapUtils.rotateBitmap(bitmap, 180, true);
+            bitmap = BitmapUtils.flipBitmap(bitmap, true);
+            saveBitmap(bitmap);
+            bitmap.recycle();
         }).start();
     }
 
 
-    protected String getSD(){
+    protected String getSD() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
     }
 
     //图片保存
-    public void saveBitmap(Bitmap b){
-        String path =  getSD()+ "/OpenGLDemo/photo/";
-        File folder=new File(path);
-        if(!folder.exists()&&!folder.mkdirs()){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(BeautyCamera.this, "无法保存照片", Toast.LENGTH_SHORT).show();
-                }
+    public void saveBitmap(Bitmap b) {
+        String path = getSD() + "/OpenGLDemo/photo/";
+        File folder = new File(path);
+        if (!folder.exists() && !folder.mkdirs()) {
+            runOnUiThread(() -> {
+                Toast.makeText(BeautyCamera.this, "无法保存照片", Toast.LENGTH_SHORT).show();
             });
             return;
         }
         long dataTake = System.currentTimeMillis();
-        final String jpegName=path+ dataTake +".jpg";
+        final String jpegName = path + dataTake + ".jpg";
         try {
             FileOutputStream fout = new FileOutputStream(jpegName);
             BufferedOutputStream bos = new BufferedOutputStream(fout);
@@ -428,11 +474,8 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(BeautyCamera.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
-            }
+        runOnUiThread(() -> {
+            Toast.makeText(BeautyCamera.this, "保存成功->" + jpegName, Toast.LENGTH_SHORT).show();
         });
 
     }
@@ -443,7 +486,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
 
     public void onRecordFrameAvailable(int texture, long timestamp) {
-         mHWMediaRecorder.frameAvailable(texture, timestamp);
+        mHWMediaRecorder.frameAvailable(texture, timestamp);
     }
 
     @Override
@@ -458,6 +501,16 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     @Override
     public void onRecordFinish(RecordInfo info) {
+
+    }
+
+    @Override
+    public void onTrackingFinish() {
+        customSurfaceView.requestRender();
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data) {
 
     }
 }

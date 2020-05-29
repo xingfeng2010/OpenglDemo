@@ -2,8 +2,9 @@ package opengl.xingfeng.com.opengldemo.util;
 
 import android.media.MediaCodecList;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 public class VideoSupportUtil {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)

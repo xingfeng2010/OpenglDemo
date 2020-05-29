@@ -2,9 +2,8 @@ package opengl.xingfeng.com.opengldemo;
 
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 
-import opengl.xingfeng.com.opengldemo.render.TextureRender;
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.render.YUVTextureRender;
 
 public class YUVTextureActivity extends AppCompatActivity {

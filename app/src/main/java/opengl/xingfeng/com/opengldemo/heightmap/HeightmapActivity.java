@@ -1,12 +1,12 @@
 package opengl.xingfeng.com.opengldemo.heightmap;
 
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
-import opengl.xingfeng.com.opengldemo.particles.ParticlesRender;
+import androidx.appcompat.app.AppCompatActivity;
+
 
 public class HeightmapActivity extends AppCompatActivity implements View.OnTouchListener{
     private GLSurfaceView mGLSurfaceView;

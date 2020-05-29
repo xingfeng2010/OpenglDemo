@@ -14,9 +14,6 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Size;
 import android.view.Surface;
@@ -25,6 +22,8 @@ import android.view.TextureView;
 
 import java.util.Arrays;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.R;
 
 import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;

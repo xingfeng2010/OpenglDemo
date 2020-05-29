@@ -1,6 +1,5 @@
 package opengl.xingfeng.com.opengldemo;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -14,6 +13,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL10;
 
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.util.VideoSupportUtil;
 
 public class EglDemoActivity extends AppCompatActivity implements SurfaceHolder.Callback, Runnable, View.OnTouchListener{

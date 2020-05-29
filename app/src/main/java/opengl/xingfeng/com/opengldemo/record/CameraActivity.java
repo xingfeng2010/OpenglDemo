@@ -1,9 +1,9 @@
 package opengl.xingfeng.com.opengldemo.record;
 
 import android.content.res.Configuration;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.R;
 
 public class CameraActivity extends AppCompatActivity {

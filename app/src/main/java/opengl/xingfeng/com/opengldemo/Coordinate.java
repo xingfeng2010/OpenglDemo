@@ -1,11 +1,10 @@
 package opengl.xingfeng.com.opengldemo;
 
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 
-import opengl.xingfeng.com.opengldemo.render.CoordinateRender;
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.render.TextureRender;
 
 public class Coordinate extends AppCompatActivity {

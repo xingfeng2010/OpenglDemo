@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -35,6 +34,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
+
+import androidx.annotation.RequiresApi;
 
 /**
  * {@hide}

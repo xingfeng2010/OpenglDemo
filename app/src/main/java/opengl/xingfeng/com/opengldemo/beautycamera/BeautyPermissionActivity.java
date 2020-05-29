@@ -2,11 +2,11 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.Manifest;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.util.PermissionUtils;
 

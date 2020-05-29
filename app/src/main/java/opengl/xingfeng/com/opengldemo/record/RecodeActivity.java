@@ -1,7 +1,6 @@
 package opengl.xingfeng.com.opengldemo.record;
 
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.R;
 
 import static opengl.xingfeng.com.opengldemo.record.BaseVideoEncoder.TAG;

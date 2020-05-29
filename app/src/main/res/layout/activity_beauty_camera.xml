@@ -1,53 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:keepScreenOn="true"
-    android:layout_height="match_parent">
-    <FrameLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
+
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/beauty">
+
         <opengl.xingfeng.com.opengldemo.beautycamera.CustomSurfaceView
+            android:id="@+id/mSurface"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/mSurface" />
+            android:layout_height="match_parent" />
     </FrameLayout>
-    <android.support.v7.widget.AppCompatSeekBar
-        android:layout_width="match_parent"
-        android:layout_alignParentTop="true"
-        android:id="@+id/mSeek"
-        android:layout_height="35dp" />
+
     <ImageButton
+        android:id="@+id/mShutter"
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:contentDescription="@string/app_name"
-        android:background="@drawable/btn_shutter_background"
-        android:id="@+id/mShutter"
-        android:onClick="onClick"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="30dp"
-        android:layout_centerHorizontal="true"/>
-
-    <!-- 速度选择条 -->
-    <opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar
-        android:id="@+id/record_speed_bar"
         android:layout_centerHorizontal="true"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="40dp"
-        android:layout_above="@id/mShutter"
-        android:visibility="gone"
-        />
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/btn_shutter_background"
+        android:contentDescription="@string/app_name"
+        android:onClick="onClick" />
 
     <TextView
         android:id="@+id/fps_tv"
-        android:layout_below="@id/mSeek"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_light"
-        />
+        android:layout_below="@id/mSeek"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:textColor="@android:color/holo_red_light" />
 
-    <include android:id="@+id/camera_setting"
+    <!-- 速度选择条 -->
+    <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/mSeek"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_alignParentTop="true" />
+
+    <include
+        android:id="@+id/camera_setting"
         layout="@layout/camera_setting_layout" />
+
+    <opengl.xingfeng.com.opengldemo.view.RecordSpeedLevelBar
+        android:id="@+id/record_speed_bar"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_above="@id/mShutter"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:visibility="gone" />
 </RelativeLayout>

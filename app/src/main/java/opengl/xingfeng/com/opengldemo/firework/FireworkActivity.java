@@ -1,10 +1,10 @@
 package opengl.xingfeng.com.opengldemo.firework;
 
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import opengl.xingfeng.com.opengldemo.particles.ParticlesRender;
+import androidx.appcompat.app.AppCompatActivity;
+
 
 public class FireworkActivity extends AppCompatActivity {
 

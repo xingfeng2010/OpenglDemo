@@ -2,10 +2,9 @@ package opengl.xingfeng.com.opengldemo.water;
 
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 
-import opengl.xingfeng.com.opengldemo.R;
-import opengl.xingfeng.com.opengldemo.render.TextureRender;
+import androidx.appcompat.app.AppCompatActivity;
+
 
 public class ESWaterActivity extends AppCompatActivity {
 

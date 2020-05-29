@@ -14,9 +14,9 @@ import android.opengl.ETC1Util;
 import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatActivity;
 import opengl.xingfeng.com.opengldemo.R;
 
 public class CompressedTextureActivity extends AppCompatActivity {
