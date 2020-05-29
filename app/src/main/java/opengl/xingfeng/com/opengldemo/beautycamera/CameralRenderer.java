@@ -30,6 +30,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     private ShowScreenRender showScreenRender;
     private CameraWatermaskRender mCameraWatermaskRender;
     private WaterMarkRenderDrawer mWaterMarkRenderDrawer;
+    private ImageFilterRender mImageFilterRender;
 
     private float[] SM = new float[16];                           //用于绘制到屏幕上的变换矩阵
     private int mShowType = MatrixUtils.TYPE_CENTERCROP;          //输出到屏幕上的方式
@@ -50,6 +51,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         showScreenRender = new ShowScreenRender(context);
         mCameraWatermaskRender = new CameraWatermaskRender(context);
         mWaterMarkRenderDrawer = new WaterMarkRenderDrawer(context);
+        mImageFilterRender = new ImageFilterRender(context);
 
         mFrameRateMeter = new FrameRateMeter();
 
@@ -65,6 +67,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
         mCameraWatermaskRender.onSurfaceCreated();
+        mImageFilterRender.onSurfaceCreated();
         mWaterMarkRenderDrawer.onCreated();
         if (mSurfaceCreateCallback != null) {
             mSurfaceCreateCallback.surfaceCreated(mEffectFilter.getSurfaceTexture());
@@ -87,6 +90,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         beautyRender.onSurfaceChanged(previewWidth, previewHeight);
         showScreenRender.onSurfaceChanged(previewWidth, previewHeight);
         mCameraWatermaskRender.onSurfaceChanged(previewWidth,previewHeight);
+        mImageFilterRender.onSurfaceChanged(previewWidth,previewHeight);
         mWaterMarkRenderDrawer.onChanged(previewWidth,previewHeight);
     }
 
@@ -108,9 +112,12 @@ public class CameralRenderer implements CustomSurfaceView.Render {
                     mEffectFilter.getSurfaceTexture().getTimestamp());
         }
 
+        mImageFilterRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
+        mImageFilterRender.onDrawFrame();
+
         GLES20.glViewport(0, 0, screenWidth, screenHeight);
         showScreenRender.setMatrix(SM);
-        showScreenRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
+        showScreenRender.setInputTexture(mImageFilterRender.getOnputTextureId());
         showScreenRender.onDrawFrame();
 
         if (mCameraSettingParam.isTakePicture()) {
