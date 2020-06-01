@@ -329,6 +329,13 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                         surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
 
 
+                        FaceTracker.getInstance()
+                                .setBackCamera(false)
+                                .prepareFaceTracker(BeautyCamera.this,
+                                        90,
+                                        mPreviewSize.getWidth(),
+                                        mPreviewSize.getHeight());
+
                         //      就是在这里，通过这个set(key,value)方法，设置曝光啊，自动聚焦等参数！！ 如下举例：
                         //      mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
                         mImageReader = ImageReader.newInstance(customSurfaceView.getWidth(), customSurfaceView.getHeight(), ImageFormat.JPEG, 2);
