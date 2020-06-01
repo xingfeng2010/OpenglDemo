@@ -471,6 +471,7 @@ public final class FaceTracker {
             boolean needFlip = faceTrackParam.previewTrack && !faceTrackParam.isBackCamera;
             LandmarkEngine.getInstance().setNeedFlip(needFlip);
 
+            Log.d("onFaceTracking", "track length = " + faces.length);
             // 计算人脸关键点
             if (faces != null && faces.length > 0) {
                 for (int index = 0; index < faces.length; index++) {

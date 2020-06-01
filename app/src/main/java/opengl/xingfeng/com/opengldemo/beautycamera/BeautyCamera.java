@@ -66,7 +66,7 @@ import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 
 public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback, FpsUpdateCallback,
-        RecordSpeedLevelBar.OnSpeedChangedListener, TakePictureCallback, OnRecordStateListener, PreviewCallback, FaceTrackerCallback {
+        RecordSpeedLevelBar.OnSpeedChangedListener, TakePictureCallback, OnRecordStateListener, PreviewCallback, FaceTrackerCallback,Camera.PreviewCallback {
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
@@ -187,12 +187,14 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void surfaceCreated(SurfaceTexture surfaceTexture) {
         mSurfaceTexture = surfaceTexture;
-//        openCamera(surfaceTexture);
-        openCamera2(surfaceTexture);
+        openCamera(surfaceTexture);
+//        openCamera2(surfaceTexture);
 //
 //        previewAngle(this);
     }
 
+
+    Camera.Size mCamera1Size;
     public void openCamera(SurfaceTexture surfaceTexture) {
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -201,11 +203,21 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         }
         mCamera = Camera.open(cameraId);
         Camera.Size size = mCamera.getParameters().getPreviewSize();
+        mCamera1Size = size;
         render.setPreViewSize(size.height, size.width);
         try {
             mCamera.setPreviewTexture(surfaceTexture);
-            mCamera.startPreview();
             mCamera.setDisplayOrientation(90);
+            mCamera.setPreviewCallback(this);
+
+            mCamera.startPreview();
+
+            FaceTracker.getInstance()
+                    .setBackCamera(false)
+                    .prepareFaceTracker(BeautyCamera.this,
+                            90,
+                            size.height,
+                            size.width);
 
             surfaceTexture.setOnFrameAvailableListener((SurfaceTexture texture) -> {
                 customSurfaceView.requestRender();
@@ -518,5 +530,11 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     @Override
     public void onPreviewFrame(byte[] data) {
 
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        FaceTracker.getInstance()
+                .trackFace(data, mCamera1Size.width, mCamera1Size.height);
     }
 }
