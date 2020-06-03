@@ -1,7 +1,9 @@
 package opengl.xingfeng.com.opengldemo;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,7 @@ import opengl.xingfeng.com.opengldemo.proxy.MyUserManager;
 import opengl.xingfeng.com.opengldemo.proxy.UsermangerImpl;
 import opengl.xingfeng.com.opengldemo.record.RecordMainActivity;
 import opengl.xingfeng.com.opengldemo.texturecompress.CompressedTextureActivity;
+import opengl.xingfeng.com.opengldemo.util.DisplayUtil;
 import opengl.xingfeng.com.opengldemo.water.ESWaterActivity;
 
 public class StartMainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
@@ -65,6 +68,21 @@ public class StartMainActivity extends AppCompatActivity implements AdapterView.
         MyUserManager userManager=(MyUserManager)logHandler.newProxyInstance(new UsermangerImpl());
         //UserManager userManager=new UserManagerImpl();
         userManager.addUser("1111", "张三");
+
+        int width = DisplayUtil.getScreenW(this);
+
+        Log.i("DEBUG_TEST", "getScreenW :" + width);
+
+        Log.i("DEBUG_TEST", "getScreenW sw:" + pxTodp(this, width));
+    }
+
+    public static int pxTodp(Context context, float pxValue) {
+        if (context == null) {
+            return -1;
+        }
+
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
     }
 
     /**

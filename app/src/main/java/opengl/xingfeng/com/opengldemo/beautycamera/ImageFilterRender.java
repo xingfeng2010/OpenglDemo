@@ -16,6 +16,8 @@ import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.DynamicStickerLoader;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicStickerNormalData;
+import com.cgfay.filter.glfilter.utils.OpenGLUtils;
+import com.cgfay.filter.glfilter.utils.TextureRotationUtils;
 import com.cgfay.landmark.FacePointsUtils;
 import com.cgfay.landmark.LandmarkEngine;
 import com.cgfay.landmark.OneFace;
@@ -84,6 +86,10 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
     public ImageFilterRender(Context context) {
         mCameraWatermaskProgram = new ImageFilterProgram(context);
         mStickerLoaderList = new ArrayList<>();
+
+        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        // 备注：由于后面的透视变换计算把贴纸纹理的左右反过来了，这里用纹理坐标做个纠正
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices_flipx);
 
         mResourceList.add(new ResourceData("cat", "assets://resource/cat.zip", ResourceType.STICKER, "cat", "assets://thumbs/resource/cat.png"));
 
@@ -155,28 +161,40 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
             Log.i(TAG,"LandmarkEngine hasFace!!");
             // 逐个人脸绘制
             int faceCount = LandmarkEngine.getInstance().getFaceSize();
+
+            Log.i(TAG,"LandmarkEngine faceCount=" + faceCount);
             for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
                 OneFace oneFace = LandmarkEngine.getInstance().getOneFace(faceIndex);
                 // 如果置信度大于0.5，表示这是一个正常的人脸，绘制贴纸
+
+                Log.i(TAG,"LandmarkEngine oneFace.confidence=" + oneFace.confidence);
                 if (oneFace.confidence > 0.5f) {
                     for (int stickerIndex = 0; stickerIndex < mStickerLoaderList.size(); stickerIndex++) {
                         synchronized (this) {
                             mStickerLoaderList.get(stickerIndex).updateStickerTexture();
                             calculateStickerVertices((DynamicStickerNormalData) mStickerLoaderList.get(stickerIndex).getStickerData(),
                                     oneFace);
+
+                            Log.i(TAG,"LandmarkEngine reinit");
                             mCameraWatermaskProgram.reinit(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
+
+                            Log.i(TAG,"LandmarkEngine draw begin");
                             mCameraWatermaskProgram.draw(width, height);
+
+                            Log.i(TAG,"LandmarkEngine draw finish11");
                             //super.drawFrameBuffer(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
                         }
                     }
                 }
             }
-            GLES30.glFlush();
+            GLES20.glFlush();
         } else {
             Log.i(TAG,"LandmarkEngine don't hasFace!!");
         }
 
         EasyGlUtils.unBindFrameBuffer();
+
+        Log.i(TAG,"LandmarkEngine onDraw Finish!!! ");
     }
 
 
@@ -203,6 +221,8 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
      * @param stickerData
      */
     private void calculateStickerVertices(DynamicStickerNormalData stickerData, OneFace oneFace) {
+        Log.i(TAG,"LandmarkEngine calculateStickerVertices oneFace=" + oneFace);
+        Log.i(TAG,"LandmarkEngine calculateStickerVertices oneFace.vertexPoints=" + oneFace.vertexPoints);
         if (oneFace == null || oneFace.vertexPoints == null) {
             return;
         }
@@ -219,6 +239,8 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
         // 1.2、根据贴纸的参数计算出中心点的坐标
         float centerX = 0.0f;
         float centerY = 0.0f;
+
+        Log.i(TAG,"LandmarkEngine centerIndexList:" + stickerData.centerIndexList.length);
         for (int i = 0; i < stickerData.centerIndexList.length; i++) {
             centerX += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] * 0.5f + 0.5f) * mImageWidth;
             centerY += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2 + 1] * 0.5f + 0.5f) * mImageHeight;

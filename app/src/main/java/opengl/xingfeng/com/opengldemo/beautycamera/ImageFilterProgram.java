@@ -3,6 +3,7 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,6 +12,8 @@ import java.nio.FloatBuffer;
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 import opengl.xingfeng.com.opengldemo.water.ShaderUtil;
+
+import static opengl.xingfeng.com.opengldemo.beautycamera.CameralRenderer.TAG;
 
 public class ImageFilterProgram extends MyShaderProgram {
     private float[] matrix = MatrixUtils.getOriginalMatrix();
@@ -112,6 +115,8 @@ public class ImageFilterProgram extends MyShaderProgram {
 
     public void draw(int width, int height) {
         //GLES20.glViewport(0, 0, width, height);
+
+        Log.i(TAG,"LandmarkEngine ImageFilterProgram draw!!");
         useProgram();
         setUniforms();
 
@@ -130,6 +135,8 @@ public class ImageFilterProgram extends MyShaderProgram {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 
         GLES20.glViewport(0, 0, width, height);
+
+        Log.i(TAG,"LandmarkEngine ImageFilterProgram draw finish!!");
     }
 
     public void setUniforms() {
@@ -161,8 +168,14 @@ public class ImageFilterProgram extends MyShaderProgram {
 
     public void reinit(int stickerTexture, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         this.textureId = stickerTexture;
-        mVertexBuffer = vertexBuffer;
-        mTextureBuffer = textureBuffer;
+        mVertexBuffer.clear();
+        mVertexBuffer.put(vertexBuffer);
+        mVertexBuffer.position(0);
+
+
+        mTextureBuffer.clear();
+        mTextureBuffer.put(textureBuffer);
+        mTextureBuffer.position(0);
 
         createVBO();
     }

@@ -47,6 +47,7 @@ public final class FaceTracker {
 
     /**
      * 检测回调
+     *
      * @param callback
      * @return
      */
@@ -67,10 +68,11 @@ public final class FaceTracker {
 
     /**
      * 初始化人脸检测
-     * @param context       上下文
-     * @param orientation   图像角度
-     * @param width         图像宽度
-     * @param height        图像高度
+     *
+     * @param context     上下文
+     * @param orientation 图像角度
+     * @param width       图像宽度
+     * @param height      图像高度
      */
     public void prepareFaceTracker(Context context, int orientation, int width, int height) {
         synchronized (mSyncFence) {
@@ -82,6 +84,7 @@ public final class FaceTracker {
 
     /**
      * 检测人脸
+     *
      * @param data
      * @param width
      * @param height
@@ -105,6 +108,7 @@ public final class FaceTracker {
 
     /**
      * 是否后置摄像头
+     *
      * @param backCamera
      * @return
      */
@@ -115,6 +119,7 @@ public final class FaceTracker {
 
     /**
      * 是否允许3D姿态角
+     *
      * @param enable
      * @return
      */
@@ -125,6 +130,7 @@ public final class FaceTracker {
 
     /**
      * 是否允许区域检测
+     *
      * @param enable
      * @return
      */
@@ -135,6 +141,7 @@ public final class FaceTracker {
 
     /**
      * 是否允许106个关键点
+     *
      * @param enable
      * @return
      */
@@ -145,6 +152,7 @@ public final class FaceTracker {
 
     /**
      * 是否允许多人脸检测
+     *
      * @param enable
      * @return
      */
@@ -155,6 +163,7 @@ public final class FaceTracker {
 
     /**
      * 是否允许人脸年龄检测
+     *
      * @param enable
      * @return
      */
@@ -165,6 +174,7 @@ public final class FaceTracker {
 
     /**
      * 最小检测人脸大小
+     *
      * @param size
      * @return
      */
@@ -175,6 +185,7 @@ public final class FaceTracker {
 
     /**
      * 检测时间间隔
+     *
      * @param interval
      * @return
      */
@@ -185,6 +196,7 @@ public final class FaceTracker {
 
     /**
      * 检测模式
+     *
      * @param mode
      * @return
      */
@@ -244,7 +256,8 @@ public final class FaceTracker {
         private SensorEventUtil mSensorUtil;
 
         private Looper mLooper;
-        private @Nullable Handler mHandler;
+        private @Nullable
+        Handler mHandler;
 
         public TrackerThread(String name) {
             super(name);
@@ -290,6 +303,7 @@ public final class FaceTracker {
 
         /**
          * 安全退出
+         *
          * @return
          */
         public boolean quitSafely() {
@@ -303,6 +317,7 @@ public final class FaceTracker {
 
         /**
          * 获取Looper
+         *
          * @return
          */
         public Looper getLooper() {
@@ -322,10 +337,11 @@ public final class FaceTracker {
 
         /**
          * 初始化人脸检测
-         * @param context       上下文
-         * @param orientation   图像角度
-         * @param width         图像宽度
-         * @param height        图像高度
+         *
+         * @param context     上下文
+         * @param orientation 图像角度
+         * @param width       图像宽度
+         * @param height      图像高度
          */
         public void prepareFaceTracker(final Context context, final int orientation,
                                        final int width, final int height) {
@@ -340,10 +356,11 @@ public final class FaceTracker {
 
         /**
          * 检测人脸
-         * @param data      图像数据， NV21 或者 RGBA格式
-         * @param width     图像宽度
-         * @param height    图像高度
-         * @return          是否检测成功
+         *
+         * @param data   图像数据， NV21 或者 RGBA格式
+         * @param width  图像宽度
+         * @param height 图像高度
+         * @return 是否检测成功
          */
         public void trackFace(final byte[] data, final int width, final int height) {
             waitUntilReady();
@@ -369,10 +386,11 @@ public final class FaceTracker {
 
         /**
          * 初始化人脸检测
-         * @param context       上下文
-         * @param orientation   图像角度，预览时设置相机的角度，如果是静态图片，则为0
-         * @param width         图像宽度
-         * @param height        图像高度
+         *
+         * @param context     上下文
+         * @param orientation 图像角度，预览时设置相机的角度，如果是静态图片，则为0
+         * @param width       图像宽度
+         * @param height      图像高度
          */
         private synchronized void internalPrepareFaceTracker(Context context, int orientation, int width, int height) {
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
@@ -419,10 +437,11 @@ public final class FaceTracker {
 
         /**
          * 检测人脸
-         * @param data      图像数据，预览时为NV21，静态图片则为RGBA格式
-         * @param width     图像宽度
-         * @param height    图像高度
-         * @return          是否检测成功
+         *
+         * @param data   图像数据，预览时为NV21，静态图片则为RGBA格式
+         * @param width  图像宽度
+         * @param height 图像高度
+         * @return 是否检测成功
          */
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
@@ -456,8 +475,7 @@ public final class FaceTracker {
             }
 
             // 人脸检测
-            final Facepp.Face[] faces = facepp.detect(data, width, height,
-                    faceTrackParam.previewTrack ? Facepp.IMAGEMODE_NV21 : Facepp.IMAGEMODE_RGBA);
+            final Facepp.Face[] faces = facepp.detect(data, width, height, Facepp.IMAGEMODE_NV21);
 
             // 计算检测时间
             if (VERBOSE) {
@@ -530,11 +548,13 @@ public final class FaceTracker {
                     if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.points.length * 2) {
                         oneFace.vertexPoints = new float[face.points.length * 2];
                     }
+
+                    Log.d("onFaceTracking", "face.points.length = " + face.points.length);
                     for (int i = 0; i < face.points.length; i++) {
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
                         float x = (face.points[i].x / height) * 2 - 1;
                         float y = (face.points[i].y / width) * 2 - 1;
-                        float[] point = new float[] {x, -y};
+                        float[] point = new float[]{x, -y};
                         if (orientation == 1) {
                             if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
                                 point[0] = -y;
@@ -572,7 +592,7 @@ public final class FaceTracker {
                 }
             }
             // 设置人脸个数
-            LandmarkEngine.getInstance().setFaceSize(faces!= null ? faces.length : 0);
+            LandmarkEngine.getInstance().setFaceSize(faces != null ? faces.length : 0);
             // 检测完成回调
             if (faceTrackParam.trackerCallback != null) {
                 faceTrackParam.trackerCallback.onTrackingFinish();
