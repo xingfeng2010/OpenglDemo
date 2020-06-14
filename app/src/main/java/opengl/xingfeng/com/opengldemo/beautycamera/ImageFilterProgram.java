@@ -3,6 +3,10 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
+import android.util.Log;
+
+import com.cgfay.filter.glfilter.utils.OpenGLUtils;
+import com.cgfay.filter.glfilter.utils.TextureRotationUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,6 +15,8 @@ import java.nio.FloatBuffer;
 import opengl.xingfeng.com.opengldemo.R;
 import opengl.xingfeng.com.opengldemo.util.MatrixUtils;
 import opengl.xingfeng.com.opengldemo.water.ShaderUtil;
+
+import static opengl.xingfeng.com.opengldemo.beautycamera.CameralRenderer.TAG;
 
 public class ImageFilterProgram extends MyShaderProgram {
     private float[] matrix = MatrixUtils.getOriginalMatrix();
@@ -34,6 +40,9 @@ public class ImageFilterProgram extends MyShaderProgram {
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
 
+    private FloatBuffer mStickerVertexBuffer;
+    private FloatBuffer mStickerTextureBuffer;
+
     //每一次取点的时候取几个点
     static final int COORDS_PER_VERTEX = 2;
 
@@ -54,7 +63,7 @@ public class ImageFilterProgram extends MyShaderProgram {
     private int uMatrixLocation;
 
     //vbo id
-    private int vboId;
+    private int vboId, vboId2;
 
     private int textureType = 0;      //默认使用Texture2D0
     private int textureId = 0;
@@ -73,6 +82,9 @@ public class ImageFilterProgram extends MyShaderProgram {
                 .asFloatBuffer()
                 .put(textureData);
         mTextureBuffer.position(0);
+
+        mStickerVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mStickerTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
     }
 
     protected void init() {
@@ -106,6 +118,25 @@ public class ImageFilterProgram extends MyShaderProgram {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
+    /**
+     * 创建vbo
+     */
+    private void createVBO2() {
+        //1. 创建VBO
+        int[] vbos = new int[1];
+        GLES20.glGenBuffers(vbos.length, vbos, 0);
+        vboId2 = vbos[0];
+        //2. 绑定VBO
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId2);
+        //3. 分配VBO需要的缓存大小
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertexData.length * 4 + textureData.length * 4, null, GLES20.GL_STATIC_DRAW);
+        //4. 为VBO设置顶点数据的值
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexData.length * 4, mStickerVertexBuffer);
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexData.length * 4, textureData.length * 4, mStickerTextureBuffer);
+        //5. 解绑VBO
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
     public void setTextureId(int inputTexture) {
         this.textureId = inputTexture;
     }
@@ -132,12 +163,44 @@ public class ImageFilterProgram extends MyShaderProgram {
         GLES20.glViewport(0, 0, width, height);
     }
 
+    public void draw2(int width, int height) {
+        //GLES20.glViewport(0, 0, width, height);
+        useProgram();
+        setUniforms2();
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        //GLES20.glUniform1i(uTextuUnitLocation, textureType);
+
+        //使用VBO设置纹理和顶点值
+        useVboSetVertext2();
+
+        //绘制 GLES20.GL_TRIANGLE_STRIP:复用坐标
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
+        GLES20.glDisableVertexAttribArray(aPositionLocation);
+        GLES20.glDisableVertexAttribArray(aTextureCoordLocation);
+        //解绑纹理
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+
+        GLES20.glViewport(0, 0, width, height);
+    }
+
     public void setUniforms() {
         GLES20.glEnableVertexAttribArray(aPositionLocation);
         GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 0, mVertexBuffer);
 
         GLES20.glEnableVertexAttribArray(aTextureCoordLocation);
         GLES20.glVertexAttribPointer(aTextureCoordLocation, 2, GLES20.GL_FLOAT, false, 0, mTextureBuffer);
+
+        GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,matrix,0);
+    }
+
+    public void setUniforms2() {
+        GLES20.glEnableVertexAttribArray(aPositionLocation);
+        GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 0, mStickerVertexBuffer);
+
+        GLES20.glEnableVertexAttribArray(aTextureCoordLocation);
+        GLES20.glVertexAttribPointer(aTextureCoordLocation, 2, GLES20.GL_FLOAT, false, 0, mStickerTextureBuffer);
 
         GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,matrix,0);
     }
@@ -155,15 +218,39 @@ public class ImageFilterProgram extends MyShaderProgram {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
+
+    /**
+     * 使用vbo设置顶点位置
+     */
+    private void useVboSetVertext2() {
+        //1. 绑定VBO
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId2);
+        //2. 设置顶点数据
+        GLES20.glVertexAttribPointer(aPositionLocation, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, 0);
+        GLES20.glVertexAttribPointer(aTextureCoordLocation, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexData.length * 4);
+        //3. 解绑VBO
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
     public void setMatrix(float[] matrix) {
         this.matrix = matrix;
     }
 
     public void reinit(int stickerTexture, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         this.textureId = stickerTexture;
-        mVertexBuffer = vertexBuffer;
-        mTextureBuffer = textureBuffer;
 
-        createVBO();
+        Log.i(TAG,"LandmarkEngine reinit 000");
+        mStickerVertexBuffer.clear();
+        mStickerVertexBuffer.put(vertexBuffer);
+        mStickerVertexBuffer.position(0);
+
+        Log.i(TAG,"LandmarkEngine reinit 111");
+
+        mStickerTextureBuffer.clear();
+        mStickerTextureBuffer.put(textureBuffer);
+        mStickerTextureBuffer.position(0);
+        Log.i(TAG,"LandmarkEngine reinit 222");
+
+        createVBO2();
     }
 }

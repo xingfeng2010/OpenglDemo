@@ -16,6 +16,8 @@ import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.DynamicStickerLoader;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicStickerNormalData;
+import com.cgfay.filter.glfilter.utils.OpenGLUtils;
+import com.cgfay.filter.glfilter.utils.TextureRotationUtils;
 import com.cgfay.landmark.FacePointsUtils;
 import com.cgfay.landmark.LandmarkEngine;
 import com.cgfay.landmark.OneFace;
@@ -84,6 +86,9 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
     public ImageFilterRender(Context context) {
         mCameraWatermaskProgram = new ImageFilterProgram(context);
         mStickerLoaderList = new ArrayList<>();
+
+        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
 
         mResourceList.add(new ResourceData("cat", "assets://resource/cat.zip", ResourceType.STICKER, "cat", "assets://thumbs/resource/cat.png"));
 
@@ -162,10 +167,18 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
                     for (int stickerIndex = 0; stickerIndex < mStickerLoaderList.size(); stickerIndex++) {
                         synchronized (this) {
                             mStickerLoaderList.get(stickerIndex).updateStickerTexture();
+
+                            Log.i(TAG,"LandmarkEngine reinit updateStickerTexture !!");
                             calculateStickerVertices((DynamicStickerNormalData) mStickerLoaderList.get(stickerIndex).getStickerData(),
                                     oneFace);
+
+                            Log.i(TAG,"LandmarkEngine reinit begin !!");
                             mCameraWatermaskProgram.reinit(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
-                            mCameraWatermaskProgram.draw(width, height);
+
+                            Log.i(TAG,"LandmarkEngine reinit end !!");
+                            mCameraWatermaskProgram.draw2(width, height);
+
+                            Log.i(TAG,"LandmarkEngine draw2  success");
                             //super.drawFrameBuffer(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
                         }
                     }
@@ -173,7 +186,6 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
             }
             GLES30.glFlush();
         } else {
-            Log.i(TAG,"LandmarkEngine don't hasFace!!");
         }
 
         EasyGlUtils.unBindFrameBuffer();
