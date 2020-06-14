@@ -143,6 +143,10 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
 
         GLES20.glGenFramebuffers(1, fFrame, 0);
         EasyGlUtils.genTexturesWithParameter(1, fTexture,0,GLES20.GL_RGBA,width,height);
+
+        mRatio = (float) width / height;
+        Matrix.frustumM(mProjectionMatrix, 0, -mRatio, mRatio, -1.0f, 1.0f, 3.0f, 9.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     }
 
     @Override
@@ -151,6 +155,7 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        Matrix.setIdentityM(mMVPMatrix, 0);
         EasyGlUtils.bindFrameTexture(fFrame[0],fTexture[0]);
         //宽高
         mCameraWatermaskProgram.setTextureId(inputTexture);
@@ -167,18 +172,28 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
                     for (int stickerIndex = 0; stickerIndex < mStickerLoaderList.size(); stickerIndex++) {
                         synchronized (this) {
                             mStickerLoaderList.get(stickerIndex).updateStickerTexture();
-
-                            Log.i(TAG,"LandmarkEngine reinit updateStickerTexture !!");
                             calculateStickerVertices((DynamicStickerNormalData) mStickerLoaderList.get(stickerIndex).getStickerData(),
                                     oneFace);
 
-                            Log.i(TAG,"LandmarkEngine reinit begin !!");
+
+
+
+//                            mMVPMatrix = new float[] {
+//                                    -5.075388f,-0.1449444f,-0.60681516f,-0.30340758f,
+//                                    0.3825209f,-2.98562f,-0.13296053f,-0.066480264f,
+//                                    1.5932865f,0.2550785f,-1.9010779f,-0.95053893f,
+//                                    8.688141f,-8.712682f,3.2775748f,6.1387873f
+//                            };
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < mMVPMatrix.length; i ++) {
+                                sb.append(mMVPMatrix[i]).append("\t");
+                                if (i != 0 && i % 4 == 0) {
+                                    sb.append("\n");
+                                }
+                            }
+                            Log.i(TAG,"LandmarkEngine reinit mMVPMatrix:" + sb.toString());
                             mCameraWatermaskProgram.reinit(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
-
-                            Log.i(TAG,"LandmarkEngine reinit end !!");
-                            mCameraWatermaskProgram.draw2(width, height);
-
-                            Log.i(TAG,"LandmarkEngine draw2  success");
+                            mCameraWatermaskProgram.draw2(mMVPMatrix, width, height);
                             //super.drawFrameBuffer(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
                         }
                     }

@@ -163,10 +163,10 @@ public class ImageFilterProgram extends MyShaderProgram {
         GLES20.glViewport(0, 0, width, height);
     }
 
-    public void draw2(int width, int height) {
+    public void draw2(float[] newMatrix, int width, int height) {
         //GLES20.glViewport(0, 0, width, height);
         useProgram();
-        setUniforms2();
+        setUniforms2(newMatrix);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
         //GLES20.glUniform1i(uTextuUnitLocation, textureType);
@@ -195,14 +195,14 @@ public class ImageFilterProgram extends MyShaderProgram {
         GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,matrix,0);
     }
 
-    public void setUniforms2() {
+    public void setUniforms2(float[] newMatrix) {
         GLES20.glEnableVertexAttribArray(aPositionLocation);
         GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 0, mStickerVertexBuffer);
 
         GLES20.glEnableVertexAttribArray(aTextureCoordLocation);
         GLES20.glVertexAttribPointer(aTextureCoordLocation, 2, GLES20.GL_FLOAT, false, 0, mStickerTextureBuffer);
 
-        GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,matrix,0);
+        GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,newMatrix,0);
     }
 
     /**
