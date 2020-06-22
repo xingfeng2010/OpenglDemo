@@ -308,6 +308,7 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
         Matrix.rotateM(mModelMatrix, 0, rollAngle, 0, 0, 1);
         Matrix.rotateM(mModelMatrix, 0, yawAngle, 0, 1, 0);
         Matrix.rotateM(mModelMatrix, 0, pitchAngle, 1, 0, 0);
+        Matrix.scaleM(mModelMatrix,0,1.0f,0.25f,1.0f);
 
         // 2.4、将Z轴平移回到原来构建的视椎体的位置，即需要将坐标z轴平移回到屏幕中心，此时才是贴纸的实际模型矩阵
         Matrix.translateM(mModelMatrix, 0, -ndcCenterX, -ndcCenterY, 0);
