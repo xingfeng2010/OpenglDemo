@@ -201,11 +201,10 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
             }
             GLES20.glFlush();
         } else {
+            Log.i(TAG,"LandmarkEngine don't hasFace!!");
         }
 
         EasyGlUtils.unBindFrameBuffer();
-
-        Log.i(TAG,"LandmarkEngine onDraw Finish!!! ");
     }
 
 

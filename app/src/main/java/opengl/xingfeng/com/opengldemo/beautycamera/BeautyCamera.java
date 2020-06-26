@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
+import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -204,6 +205,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         mCamera = Camera.open(cameraId);
         Camera.Size size = mCamera.getParameters().getPreviewSize();
         mCamera1Size = size;
+        mVideoParams.setVideoSize(size.height, size.width);
         render.setPreViewSize(size.height, size.width);
         try {
             mCamera.setPreviewTexture(surfaceTexture);
@@ -303,6 +305,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     ImageReader.OnImageAvailableListener mOnImageAvailableListener = (ImageReader reader) -> {
         Image img = reader.acquireNextImage();
+        Log.i("DEBUG_TEST","mOnImageAvailableListener, TAG:" + img.getFormat());
         /**
          *  因为Camera2并没有Camera1的Priview回调！！！
          *  所以该怎么能到预览图像的byte[]呢？
@@ -314,7 +317,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         img.close();
 
         FaceTracker.getInstance()
-                .trackFace(data, mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                .trackFace(data, mPreviewSize.getHeight(), mPreviewSize.getWidth());
     };
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -345,12 +348,12 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                                 .setBackCamera(false)
                                 .prepareFaceTracker(BeautyCamera.this,
                                         90,
-                                        mPreviewSize.getWidth(),
-                                        mPreviewSize.getHeight());
+                                        mPreviewSize.getHeight(),
+                                        mPreviewSize.getWidth());
 
                         //      就是在这里，通过这个set(key,value)方法，设置曝光啊，自动聚焦等参数！！ 如下举例：
                         //      mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                        mImageReader = ImageReader.newInstance(customSurfaceView.getWidth(), customSurfaceView.getHeight(), ImageFormat.JPEG, 2);
+                        mImageReader = ImageReader.newInstance(mPreviewSize.getHeight(), mPreviewSize.getWidth(), ImageFormat.JPEG, 2);
                         mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mHandler);
 
                         // 这里一定分别add两个surface，一个Textureview的，一个ImageReader的，如果没add，会造成没摄像头预览，或者没有ImageReader的那个回调！！
