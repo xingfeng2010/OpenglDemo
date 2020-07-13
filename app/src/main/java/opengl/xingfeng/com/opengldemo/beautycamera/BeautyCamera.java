@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.cgfay.facedetect.engine.FaceTracker;
 import com.cgfay.facedetect.listener.FaceTrackerCallback;
 import com.cgfay.landmark.LandmarkEngine;
+import com.seu.magicfilter.filter.helper.MagicFilterType;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -48,7 +49,10 @@ import java.util.Arrays;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSeekBar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import opengl.xingfeng.com.opengldemo.R;
+import opengl.xingfeng.com.opengldemo.beautycamera.adapter.FilterAdapter;
 import opengl.xingfeng.com.opengldemo.beautycamera.setting.CameraSettingParam;
 import opengl.xingfeng.com.opengldemo.record.CameraHelper;
 import opengl.xingfeng.com.opengldemo.recorder.AudioParams;
@@ -67,7 +71,7 @@ import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 
 public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback, FpsUpdateCallback,
-        RecordSpeedLevelBar.OnSpeedChangedListener, TakePictureCallback, OnRecordStateListener, PreviewCallback, FaceTrackerCallback,Camera.PreviewCallback {
+        RecordSpeedLevelBar.OnSpeedChangedListener, TakePictureCallback, OnRecordStateListener, PreviewCallback, FaceTrackerCallback, Camera.PreviewCallback {
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
@@ -83,6 +87,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
     private Handler mHandler;
     private TextView mFpsTextView;
     private RecordSpeedLevelBar mRecordSpeedLevelBar;
+    private RecyclerView mRecyclerView;
 
     private CameraSettingParam mCameraSettingParam;
 
@@ -97,6 +102,54 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     private ImageReader mImageReader;
 
+    private FilterAdapter mAdapter;
+
+
+    private final MagicFilterType[] types = new MagicFilterType[]{
+            MagicFilterType.NONE,
+            MagicFilterType.FAIRYTALE,
+            MagicFilterType.SUNRISE,
+            MagicFilterType.SUNSET,
+            MagicFilterType.WHITECAT,
+            MagicFilterType.BLACKCAT,
+            MagicFilterType.SKINWHITEN,
+            MagicFilterType.HEALTHY,
+            MagicFilterType.SWEETS,
+            MagicFilterType.ROMANCE,
+            MagicFilterType.SAKURA,
+            MagicFilterType.WARM,
+            MagicFilterType.ANTIQUE,
+            MagicFilterType.NOSTALGIA,
+            MagicFilterType.CALM,
+            MagicFilterType.LATTE,
+            MagicFilterType.TENDER,
+            MagicFilterType.COOL,
+            MagicFilterType.EMERALD,
+            MagicFilterType.EVERGREEN,
+            MagicFilterType.CRAYON,
+            MagicFilterType.SKETCH,
+            MagicFilterType.AMARO,
+            MagicFilterType.BRANNAN,
+            MagicFilterType.BROOKLYN,
+            MagicFilterType.EARLYBIRD,
+            MagicFilterType.FREUD,
+            MagicFilterType.HEFE,
+            MagicFilterType.HUDSON,
+            MagicFilterType.INKWELL,
+            MagicFilterType.KEVIN,
+            MagicFilterType.LOMO,
+            MagicFilterType.N1977,
+            MagicFilterType.NASHVILLE,
+            MagicFilterType.PIXAR,
+            MagicFilterType.RISE,
+            MagicFilterType.SIERRA,
+            MagicFilterType.SUTRO,
+            MagicFilterType.TOASTER2,
+            MagicFilterType.VALENCIA,
+            MagicFilterType.WALDEN,
+            MagicFilterType.XPROII
+    };
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,10 +159,19 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         appCompatSeekBar = (AppCompatSeekBar) findViewById(R.id.mSeek);
         mFpsTextView = (TextView) findViewById(R.id.fps_tv);
         mRecordSpeedLevelBar = findViewById(R.id.record_speed_bar);
+        mRecyclerView = findViewById(R.id.filter_listview);
         customSurfaceView.getContext();
 
         mRecordSpeedLevelBar.setOnSpeedChangedListener(this);
 
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+
+        mAdapter = new FilterAdapter(this, types);
+        mRecyclerView.setAdapter(mAdapter);
+        mAdapter.setOnFilterChangeListener(onFilterChangeListener);
 
         mCameraSettingParam = new CameraSettingParam();
         render = new CameralRenderer(this, mCameraSettingParam);
@@ -196,6 +258,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
 
     Camera.Size mCamera1Size;
+
     public void openCamera(SurfaceTexture surfaceTexture) {
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -254,6 +317,10 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
                     mHWMediaRecorder.stopRecord();
                 }
                 break;
+            case R.id.filter_change:
+                int visible = mRecyclerView.getVisibility();
+                mRecyclerView.setVisibility(visible == View.GONE ? View.VISIBLE : View.GONE);
+                break;
         }
     }
 
@@ -305,7 +372,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     ImageReader.OnImageAvailableListener mOnImageAvailableListener = (ImageReader reader) -> {
         Image img = reader.acquireNextImage();
-        Log.i("DEBUG_TEST","mOnImageAvailableListener, TAG:" + img.getFormat());
+        Log.i("DEBUG_TEST", "mOnImageAvailableListener, TAG:" + img.getFormat());
         /**
          *  因为Camera2并没有Camera1的Priview回调！！！
          *  所以该怎么能到预览图像的byte[]呢？
@@ -540,4 +607,12 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
         FaceTracker.getInstance()
                 .trackFace(data, mCamera1Size.width, mCamera1Size.height);
     }
+
+    private FilterAdapter.onFilterChangeListener onFilterChangeListener = new FilterAdapter.onFilterChangeListener(){
+
+        @Override
+        public void onFilterChanged(MagicFilterType filterType) {
+            //magicEngine.setFilter(filterType);
+        }
+    };
 }
