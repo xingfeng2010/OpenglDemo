@@ -2,12 +2,25 @@ package opengl.xingfeng.com.opengldemo.beautycamera;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
+
+import com.seu.magicfilter.filter.advanced.MagicBeautyFilter;
+import com.seu.magicfilter.filter.base.MagicCameraInputFilter;
+import com.seu.magicfilter.filter.base.gpuimage.GPUImageFilter;
+import com.seu.magicfilter.filter.helper.MagicFilterFactory;
+import com.seu.magicfilter.filter.helper.MagicFilterType;
+import com.seu.magicfilter.utils.MagicParams;
+import com.seu.magicfilter.utils.OpenGlUtils;
+import com.seu.magicfilter.utils.TextureRotationUtil;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -34,6 +47,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     private WaterMarkRenderDrawer mWaterMarkRenderDrawer;
     private ImageFilterRender mImageFilterRender;
 
+
     private float[] SM = new float[16];                           //用于绘制到屏幕上的变换矩阵
     private int mShowType = MatrixUtils.TYPE_CENTERCROP;          //输出到屏幕上的方式
 
@@ -45,8 +59,37 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     // Presenter
     private final WeakReference<BeautyCamera> mWeakBeautyCamera;
 
+    private GPUImageFilter filter;
+    private MagicCameraInputFilter cameraInputFilter;
+
+    /**
+     * 顶点坐标
+     */
+    protected final FloatBuffer gLCubeBuffer;
+
+    /**
+     * 纹理坐标
+     */
+    protected final FloatBuffer gLTextureBuffer;
+
+    protected int textureId = OpenGlUtils.NO_TEXTURE;
+    private SurfaceTexture surfaceTexture;
+
+
     public CameralRenderer(Context context, CameraSettingParam cameraSettingParam) {
         mContext = context;
+        MagicParams.context = context;
+
+        gLCubeBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.CUBE.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        gLCubeBuffer.put(TextureRotationUtil.CUBE).position(0);
+
+        gLTextureBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        gLTextureBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0);
+
 
         mEffectFilter = new EffectFilter(context);
         beautyRender = new BeautyRender(context);
@@ -59,12 +102,23 @@ public class CameralRenderer implements CustomSurfaceView.Render {
 
         mCameraSettingParam = cameraSettingParam;
 
-        mWeakBeautyCamera = new WeakReference<>((BeautyCamera)context);
+        mWeakBeautyCamera = new WeakReference<>((BeautyCamera) context);
 
     }
 
     @Override
     public void onSurfaceCreated() {
+        if (cameraInputFilter == null)
+            cameraInputFilter = new MagicCameraInputFilter();
+        cameraInputFilter.init();
+
+        if (textureId == OpenGlUtils.NO_TEXTURE) {
+            textureId = OpenGlUtils.getExternalOESTextureID();
+            if (textureId != OpenGlUtils.NO_TEXTURE) {
+                surfaceTexture = new SurfaceTexture(textureId);
+            }
+        }
+
         mEffectFilter.onSurfaceCreated();
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
@@ -72,7 +126,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         mImageFilterRender.onSurfaceCreated();
         mWaterMarkRenderDrawer.onCreated();
         if (mSurfaceCreateCallback != null) {
-            mSurfaceCreateCallback.surfaceCreated(mEffectFilter.getSurfaceTexture());
+            mSurfaceCreateCallback.surfaceCreated(surfaceTexture);
         }
 
         if (mWeakBeautyCamera.get() != null) {
@@ -85,42 +139,60 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         screenWidth = width;
         screenHeight = height;
 
+        onFilterChanged();
+
         MatrixUtils.getMatrix(SM, mShowType, previewWidth, previewHeight, width, height);
         showScreenRender.onSurfaceChanged(width, height);
         showScreenRender.setMatrix(SM);
         mEffectFilter.onSurfaceChanged(previewWidth, previewHeight);
         beautyRender.onSurfaceChanged(previewWidth, previewHeight);
         showScreenRender.onSurfaceChanged(previewWidth, previewHeight);
-        mCameraWatermaskRender.onSurfaceChanged(previewWidth,previewHeight);
-        mImageFilterRender.onSurfaceChanged(previewWidth,previewHeight);
-        mWaterMarkRenderDrawer.onChanged(previewWidth,previewHeight);
+        mCameraWatermaskRender.onSurfaceChanged(previewWidth, previewHeight);
+        mImageFilterRender.onSurfaceChanged(previewWidth, previewHeight);
+        mWaterMarkRenderDrawer.onChanged(previewWidth, previewHeight);
     }
 
     @Override
     public void onDrawFrame() {
-        mEffectFilter.onDrawFrame();
-        beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
-        beautyRender.onDrawFrame();
-
-
-        mCameraWatermaskRender.setInputTexture(beautyRender.getOnputTextureId());
-        mCameraWatermaskRender.onDrawFrame();
+//        mEffectFilter.onDrawFrame();
+//        beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
+//        beautyRender.onDrawFrame();
+//
+//
+//        mCameraWatermaskRender.setInputTexture(beautyRender.getOnputTextureId());
+//        mCameraWatermaskRender.onDrawFrame();
 
 //        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
 //        mWaterMarkRenderDrawer.draw();
 
-        if(mWeakBeautyCamera.get() != null) {
-            mWeakBeautyCamera.get().onRecordFrameAvailable(mCameraWatermaskRender.getOnputTextureId(),
-                    mEffectFilter.getSurfaceTexture().getTimestamp());
-        }
+//        if (mWeakBeautyCamera.get() != null) {
+//            mWeakBeautyCamera.get().onRecordFrameAvailable(mCameraWatermaskRender.getOnputTextureId(),
+//                    mEffectFilter.getSurfaceTexture().getTimestamp());
+//        }
+//
+//        mImageFilterRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
+//        mImageFilterRender.onDrawFrame();
 
-        mImageFilterRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
-        mImageFilterRender.onDrawFrame();
+        Log.i(TAG,"onDrawFrame surfaceTexture:" + surfaceTexture);
 
+        if(surfaceTexture == null)
+            return;
+        surfaceTexture.updateTexImage();
+        float[] mtx = new float[16];
+        surfaceTexture.getTransformMatrix(mtx);
+        cameraInputFilter.setTextureTransformMatrix(mtx);
         GLES20.glViewport(0, 0, screenWidth, screenHeight);
-        showScreenRender.setMatrix(SM);
-        showScreenRender.setInputTexture(mImageFilterRender.getOnputTextureId());
-        showScreenRender.onDrawFrame();
+        int id = OpenGlUtils.NO_TEXTURE;
+        if (filter == null) {
+            cameraInputFilter.onDrawFrame(mImageFilterRender.getOnputTextureId(), gLCubeBuffer, gLTextureBuffer);
+        } else {
+            id = cameraInputFilter.onDrawToTexture(mEffectFilter.getOnputTextureId());
+            filter.onDrawFrame(id, gLCubeBuffer, gLTextureBuffer);
+        }
+//
+//        showScreenRender.setMatrix(SM);
+//        showScreenRender.setInputTexture(mImageFilterRender.getOnputTextureId());
+//        showScreenRender.onDrawFrame();
 
         if (mCameraSettingParam.isTakePicture()) {
             ByteBuffer buffer = ByteBuffer.allocateDirect(screenWidth * screenHeight * 4);
@@ -190,5 +262,22 @@ public class CameralRenderer implements CustomSurfaceView.Render {
 
     public void setTakePictureCallback(TakePictureCallback callback) {
         mTakePictureCallback = callback;
+    }
+
+    protected void onFilterChanged() {
+        if (filter != null) {
+            filter.onDisplaySizeChanged(previewWidth, previewHeight);
+            filter.onInputSizeChanged(previewWidth, previewHeight);
+        }
+    }
+
+    public void setFilter(MagicFilterType type) {
+        if (filter != null)
+            filter.destroy();
+        filter = null;
+        filter = MagicFilterFactory.initFilters(type);
+        if (filter != null)
+            filter.init();
+        onFilterChanged();
     }
 }

@@ -72,6 +72,7 @@ import static android.opengl.GLSurfaceView.RENDERMODE_WHEN_DIRTY;
 
 public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCallback, FpsUpdateCallback,
         RecordSpeedLevelBar.OnSpeedChangedListener, TakePictureCallback, OnRecordStateListener, PreviewCallback, FaceTrackerCallback, Camera.PreviewCallback {
+    public static final String TAG = "BeautyCamera";
     private Camera mCamera;
     private CustomSurfaceView customSurfaceView;
     private AppCompatSeekBar appCompatSeekBar;
@@ -266,6 +267,7 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
             mCamera = null;
         }
         mCamera = Camera.open(cameraId);
+        mCamera.getParameters().setRotation(90);
         Camera.Size size = mCamera.getParameters().getPreviewSize();
         mCamera1Size = size;
         mVideoParams.setVideoSize(size.height, size.width);
@@ -604,15 +606,24 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        FaceTracker.getInstance()
-                .trackFace(data, mCamera1Size.width, mCamera1Size.height);
+//        FaceTracker.getInstance()
+//                .trackFace(data, mCamera1Size.width, mCamera1Size.height);
     }
 
     private FilterAdapter.onFilterChangeListener onFilterChangeListener = new FilterAdapter.onFilterChangeListener(){
 
         @Override
         public void onFilterChanged(MagicFilterType filterType) {
-            //magicEngine.setFilter(filterType);
+            Log.i(TAG,"onFilterChanged");
+            customSurfaceView.queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    render.setFilter(filterType);
+                }
+            });
+
+            customSurfaceView.requestRender();
         }
+
     };
 }

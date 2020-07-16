@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 
 import opengl.xingfeng.com.opengldemo.util.EglHelper;
@@ -83,7 +84,7 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
 
     public void setSurface(Surface surface) {
         this.mSurface = surface;
-    //    this.mEglContext = eglContext;
+        //    this.mEglContext = eglContext;
     }
 
     public EGLContext getEglContext() {
@@ -93,9 +94,19 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
         return null;
     }
 
+
+    private Runnable mRunnable;
+
+    public synchronized void queueEvent(Runnable runnable) {
+        Log.i(BeautyCamera.TAG, "queueEvent");
+        mEGLThread.queueEvent(runnable);
+    }
+
     private static class EGLThread extends Thread {
         private static final String TAG = "EGLThread";
         private boolean isCreate;
+
+        private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
 
         private int width;
         private int height;
@@ -127,6 +138,7 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
             object = new Object();
             mEglHelper = new EglHelper();
             mEglHelper.initEgl(mEGLSurfaceViewWeakRef.get().mSurface, mEGLSurfaceViewWeakRef.get().mEglContext);
+            Runnable event = null;
 
             while (true) {
                 if (isExit) {
@@ -143,6 +155,15 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
                         Thread.sleep(1000 / 60);
                     } else {
                         throw new IllegalArgumentException("rendermode");
+                    }
+                }
+
+                if (!mEventQueue.isEmpty()) {
+                    event = mEventQueue.remove(0);
+                    if (event != null) {
+                        event.run();
+                        event = null;
+                        continue;
                     }
                 }
 
@@ -171,7 +192,7 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
         }
 
         private void onDraw() {
-            if(mEGLSurfaceViewWeakRef.get().mRender == null) {
+            if (mEGLSurfaceViewWeakRef.get().mRender == null) {
                 return;
             }
 
@@ -211,6 +232,10 @@ public class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Call
                 object = null;
                 mEGLSurfaceViewWeakRef = null;
             }
+        }
+
+        public void queueEvent(Runnable runnable) {
+            mEventQueue.add(runnable);
         }
     }
 
