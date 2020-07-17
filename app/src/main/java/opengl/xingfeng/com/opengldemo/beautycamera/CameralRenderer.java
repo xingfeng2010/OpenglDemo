@@ -62,13 +62,9 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     private final WeakReference<BeautyCamera> mWeakBeautyCamera;
 
     private GPUImageFilter filter;
-    private MagicCameraInputFilter cameraInputFilter;
 
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
-
-    protected int textureId = OpenGlUtils.NO_TEXTURE;
-    private SurfaceTexture surfaceTexture;
 
 
     public CameralRenderer(Context context, CameraSettingParam cameraSettingParam) {
@@ -96,17 +92,6 @@ public class CameralRenderer implements CustomSurfaceView.Render {
 
     @Override
     public void onSurfaceCreated() {
-        if (cameraInputFilter == null)
-            cameraInputFilter = new MagicCameraInputFilter();
-        cameraInputFilter.init();
-
-        if (textureId == OpenGlUtils.NO_TEXTURE) {
-            textureId = OpenGlUtils.getExternalOESTextureID();
-            if (textureId != OpenGlUtils.NO_TEXTURE) {
-                surfaceTexture = new SurfaceTexture(textureId);
-            }
-        }
-
         mEffectFilter.onSurfaceCreated();
         beautyRender.onSurfaceCreated();
         showScreenRender.onSurfaceCreated();
@@ -161,7 +146,6 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         mImageFilterRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
         mImageFilterRender.onDrawFrame();
 
-        cameraInputFilter.setTextureTransformMatrix(SM);
         Log.i(TAG, "onDrawFrame filter:" + filter);
         if (filter != null) {
             filter.onDrawFrame(mImageFilterRender.getOnputTextureId(), mVertexBuffer, mTextureBuffer);
