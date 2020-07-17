@@ -489,7 +489,6 @@ public final class FaceTracker {
             boolean needFlip = faceTrackParam.previewTrack && !faceTrackParam.isBackCamera;
             LandmarkEngine.getInstance().setNeedFlip(needFlip);
 
-            Log.d("onFaceTracking", "track length = " + faces.length);
             // 计算人脸关键点
             if (faces != null && faces.length > 0) {
                 for (int index = 0; index < faces.length; index++) {
@@ -549,7 +548,6 @@ public final class FaceTracker {
                         oneFace.vertexPoints = new float[face.points.length * 2];
                     }
 
-                    Log.d("onFaceTracking", "face.points.length = " + face.points.length);
                     for (int i = 0; i < face.points.length; i++) {
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
                         float x = (face.points[i].x / height) * 2 - 1;

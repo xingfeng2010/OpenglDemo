@@ -606,8 +606,8 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-//        FaceTracker.getInstance()
-//                .trackFace(data, mCamera1Size.width, mCamera1Size.height);
+        FaceTracker.getInstance()
+                .trackFace(data, mCamera1Size.width, mCamera1Size.height);
     }
 
     private FilterAdapter.onFilterChangeListener onFilterChangeListener = new FilterAdapter.onFilterChangeListener(){

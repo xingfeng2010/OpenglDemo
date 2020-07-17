@@ -8,6 +8,8 @@ import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
+import com.cgfay.filter.glfilter.utils.OpenGLUtils;
+import com.cgfay.filter.glfilter.utils.TextureRotationUtils;
 import com.seu.magicfilter.filter.advanced.MagicBeautyFilter;
 import com.seu.magicfilter.filter.base.MagicCameraInputFilter;
 import com.seu.magicfilter.filter.base.gpuimage.GPUImageFilter;
@@ -62,15 +64,8 @@ public class CameralRenderer implements CustomSurfaceView.Render {
     private GPUImageFilter filter;
     private MagicCameraInputFilter cameraInputFilter;
 
-    /**
-     * 顶点坐标
-     */
-    protected final FloatBuffer gLCubeBuffer;
-
-    /**
-     * 纹理坐标
-     */
-    protected final FloatBuffer gLTextureBuffer;
+    private FloatBuffer mVertexBuffer;
+    private FloatBuffer mTextureBuffer;
 
     protected int textureId = OpenGlUtils.NO_TEXTURE;
     private SurfaceTexture surfaceTexture;
@@ -80,15 +75,8 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         mContext = context;
         MagicParams.context = context;
 
-        gLCubeBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.CUBE.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        gLCubeBuffer.put(TextureRotationUtil.CUBE).position(0);
-
-        gLTextureBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        gLTextureBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0);
+        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
 
 
         mEffectFilter = new EffectFilter(context);
@@ -126,7 +114,7 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         mImageFilterRender.onSurfaceCreated();
         mWaterMarkRenderDrawer.onCreated();
         if (mSurfaceCreateCallback != null) {
-            mSurfaceCreateCallback.surfaceCreated(surfaceTexture);
+            mSurfaceCreateCallback.surfaceCreated(mEffectFilter.getSurfaceTexture());
         }
 
         if (mWeakBeautyCamera.get() != null) {
@@ -154,45 +142,34 @@ public class CameralRenderer implements CustomSurfaceView.Render {
 
     @Override
     public void onDrawFrame() {
-//        mEffectFilter.onDrawFrame();
-//        beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
-//        beautyRender.onDrawFrame();
-//
-//
-//        mCameraWatermaskRender.setInputTexture(beautyRender.getOnputTextureId());
-//        mCameraWatermaskRender.onDrawFrame();
+        mEffectFilter.onDrawFrame();
+        beautyRender.setInputTexture(mEffectFilter.getOnputTextureId());
+        beautyRender.onDrawFrame();
 
-//        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
-//        mWaterMarkRenderDrawer.draw();
 
-//        if (mWeakBeautyCamera.get() != null) {
-//            mWeakBeautyCamera.get().onRecordFrameAvailable(mCameraWatermaskRender.getOnputTextureId(),
-//                    mEffectFilter.getSurfaceTexture().getTimestamp());
-//        }
-//
-//        mImageFilterRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
-//        mImageFilterRender.onDrawFrame();
+        mCameraWatermaskRender.setInputTexture(beautyRender.getOnputTextureId());
+        mCameraWatermaskRender.onDrawFrame();
 
-        Log.i(TAG,"onDrawFrame surfaceTexture:" + surfaceTexture);
+        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
+        mWaterMarkRenderDrawer.draw();
 
-        if(surfaceTexture == null)
-            return;
-        surfaceTexture.updateTexImage();
-        float[] mtx = new float[16];
-        surfaceTexture.getTransformMatrix(mtx);
-        cameraInputFilter.setTextureTransformMatrix(mtx);
-        GLES20.glViewport(0, 0, screenWidth, screenHeight);
-        int id = OpenGlUtils.NO_TEXTURE;
-        if (filter == null) {
-            cameraInputFilter.onDrawFrame(mImageFilterRender.getOnputTextureId(), gLCubeBuffer, gLTextureBuffer);
-        } else {
-            id = cameraInputFilter.onDrawToTexture(mEffectFilter.getOnputTextureId());
-            filter.onDrawFrame(id, gLCubeBuffer, gLTextureBuffer);
+        if (mWeakBeautyCamera.get() != null) {
+            mWeakBeautyCamera.get().onRecordFrameAvailable(mCameraWatermaskRender.getOnputTextureId(),
+                    mEffectFilter.getSurfaceTexture().getTimestamp());
         }
-//
-//        showScreenRender.setMatrix(SM);
-//        showScreenRender.setInputTexture(mImageFilterRender.getOnputTextureId());
-//        showScreenRender.onDrawFrame();
+
+        mImageFilterRender.setInputTexture(mCameraWatermaskRender.getOnputTextureId());
+        mImageFilterRender.onDrawFrame();
+
+        cameraInputFilter.setTextureTransformMatrix(SM);
+        Log.i(TAG, "onDrawFrame filter:" + filter);
+        if (filter != null) {
+            filter.onDrawFrame(mImageFilterRender.getOnputTextureId(), mVertexBuffer, mTextureBuffer);
+        } else {
+            showScreenRender.setMatrix(SM);
+            showScreenRender.setInputTexture(mImageFilterRender.getOnputTextureId());
+            showScreenRender.onDrawFrame();
+        }
 
         if (mCameraSettingParam.isTakePicture()) {
             ByteBuffer buffer = ByteBuffer.allocateDirect(screenWidth * screenHeight * 4);

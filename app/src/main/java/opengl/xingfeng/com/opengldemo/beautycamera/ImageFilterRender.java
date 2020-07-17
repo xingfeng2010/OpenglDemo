@@ -162,16 +162,13 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
         mCameraWatermaskProgram.draw(width, height);
 
         if (LandmarkEngine.getInstance().hasFace()) {
-            Log.i(TAG,"LandmarkEngine hasFace!!");
             // 逐个人脸绘制
             int faceCount = LandmarkEngine.getInstance().getFaceSize();
 
-            Log.i(TAG,"LandmarkEngine faceCount=" + faceCount);
             for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
                 OneFace oneFace = LandmarkEngine.getInstance().getOneFace(faceIndex);
                 // 如果置信度大于0.5，表示这是一个正常的人脸，绘制贴纸
 
-                Log.i(TAG,"LandmarkEngine oneFace.confidence=" + oneFace.confidence);
                 if (oneFace.confidence > 0.5f) {
                     for (int stickerIndex = 0; stickerIndex < mStickerLoaderList.size(); stickerIndex++) {
                         synchronized (this) {
@@ -191,7 +188,6 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
                                     sb.append("\n");
                                 }
                             }
-                            Log.i(TAG,"LandmarkEngine reinit mMVPMatrix:" + sb.toString());
                             mCameraWatermaskProgram.reinit(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
                             mCameraWatermaskProgram.draw2(mMVPMatrix, width, height);
                             //super.drawFrameBuffer(mStickerLoaderList.get(stickerIndex).getStickerTexture(), mVertexBuffer, mTextureBuffer);
@@ -201,7 +197,7 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
             }
             GLES20.glFlush();
         } else {
-            Log.i(TAG,"LandmarkEngine don't hasFace!!");
+
         }
 
         EasyGlUtils.unBindFrameBuffer();
@@ -231,8 +227,6 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
      * @param stickerData
      */
     private void calculateStickerVertices(DynamicStickerNormalData stickerData, OneFace oneFace) {
-        Log.i(TAG,"LandmarkEngine calculateStickerVertices oneFace=" + oneFace);
-        Log.i(TAG,"LandmarkEngine calculateStickerVertices oneFace.vertexPoints=" + oneFace.vertexPoints);
         if (oneFace == null || oneFace.vertexPoints == null) {
             return;
         }
@@ -250,7 +244,6 @@ public class ImageFilterRender implements CustomSurfaceView.Render {
         float centerX = 0.0f;
         float centerY = 0.0f;
 
-        Log.i(TAG,"LandmarkEngine centerIndexList:" + stickerData.centerIndexList.length);
         for (int i = 0; i < stickerData.centerIndexList.length; i++) {
             centerX += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] * 0.5f + 0.5f) * mImageWidth;
             centerY += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2 + 1] * 0.5f + 0.5f) * mImageHeight;
