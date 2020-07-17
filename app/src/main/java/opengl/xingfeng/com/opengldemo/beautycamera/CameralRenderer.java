@@ -135,8 +135,8 @@ public class CameralRenderer implements CustomSurfaceView.Render {
         mCameraWatermaskRender.setInputTexture(beautyRender.getOnputTextureId());
         mCameraWatermaskRender.onDrawFrame();
 
-        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
-        mWaterMarkRenderDrawer.draw();
+//        mWaterMarkRenderDrawer.setInputTexture(beautyRender.getOnputTextureId());
+//        mWaterMarkRenderDrawer.draw();
 
         if (mWeakBeautyCamera.get() != null) {
             mWeakBeautyCamera.get().onRecordFrameAvailable(mCameraWatermaskRender.getOnputTextureId(),

@@ -267,7 +267,6 @@ public class BeautyCamera extends AppCompatActivity implements SurfaceCreateCall
             mCamera = null;
         }
         mCamera = Camera.open(cameraId);
-        mCamera.getParameters().setRotation(90);
         Camera.Size size = mCamera.getParameters().getPreviewSize();
         mCamera1Size = size;
         mVideoParams.setVideoSize(size.height, size.width);
