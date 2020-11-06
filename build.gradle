@@ -1,4 +1,18 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+setDescription("OpenglDemo Project!!")
+println("Descriptoin of project $name:" + project.description)
+
+ext {
+    someOtherProp = 123
+}
+
+println("Descriptoin someOtherProp value:" + project.someOtherProp)
+ext.someOtherProp = 456
+
+println("Descriptoin someOtherProp value:" + project.someOtherProp)
+println("Descriptoin someOtherProp2 value:" + ext.someOtherProp)
+
+println("Descriptoin someOtherProp3 value:" + project.getProperties().get("someOtherProp"))
 
 buildscript {
     
@@ -29,3 +43,67 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+//task配置块永远在Task执行之前被执行
+task printProjerty() {
+    Map<String,?> properTyes = project.getProperties()
+    for (String key:properTyes.keySet()) {
+        println("Descriptoin properTyes key:" + key)
+    }
+
+    println("All custom value : $cusomProperty")
+}
+
+version = new ProjectVersion(2, 3)
+class ProjectVersion {
+    Integer major
+    Integer minor
+    Boolean release
+
+    ProjectVersion(Integer major, Integer minor) {
+        this.major = major
+        this.minor = minor
+    }
+
+    ProjectVersion(Integer major, Integer minor,Boolean release) {
+        this(major, minor)
+        this.release = release
+    }
+
+    @Override
+    String toString() {
+        "$major.$minor${release ? '' : '-SNAPSHOT'}"
+    }
+}
+
+task printVersion() {
+    doLast {
+        logger.quiet "Version: $version"
+    }
+}
+
+ext.versionFile = file('version.properties')
+task loadVersion {
+    project.version = readVersion()
+}
+
+/**
+ * task配置块永远在Task执行之前被执行
+ * 执行 gradle -q printVersion
+ * 查看效果
+ */
+
+ProjectVersion readVersion() {
+    logger.quiet 'Reading the version file.'
+    if (!versionFile.exists()) {
+        throw new GradleException("Required version file does not exits: $versionFile.canonicalPath")
+    }
+
+    Properties versionProps = new Properties()
+    versionFile.withInputStream {stream ->
+        versionProps.load(stream)
+    }
+
+    new ProjectVersion(versionProps.major.toInteger(), versionProps.minor.toInteger(), versionProps.release.toBoolean())
+}
+
