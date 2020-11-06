@@ -107,3 +107,16 @@ ProjectVersion readVersion() {
     new ProjectVersion(versionProps.major.toInteger(), versionProps.minor.toInteger(), versionProps.release.toBoolean())
 }
 
+task makeReleaseVersion(group: 'versioning', description: 'Makes project a release version.') {
+    inputs.property('release', version.release)
+    outputs.file versionFile
+
+    doLast {
+        version.release = true
+        ant.propertyfile(file:versionFile) {
+            entry(key:'release', type:'string', operation:'=',value:'true')
+        }
+    }
+}
+
+
